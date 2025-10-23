@@ -167,3 +167,14 @@ class TeamMember(models.Model):
 
     class Meta:
         indexes = [models.Index(fields=['email']), models.Index(fields=['mobile'])]
+
+
+class Announcement(models.Model):
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.title

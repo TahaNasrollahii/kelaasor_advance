@@ -1,8 +1,13 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import status, permissions, generics
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import SendOTPSerializer, VerifyOTPSerializer
+from orders.models import Order
+from support.models import Ticket
+from .models import Announcement
+from .serializers import (SendOTPSerializer, VerifyOTPSerializer,
+                          DashboardOrderSerializer, DashboardTicketSerializer,
+                          DashboardAnnouncementSerializer)
 
 
 class SendOTPView(APIView):
@@ -33,4 +38,28 @@ class VerifyOTPView(APIView):
                 "mobile": user.mobile,
                 "full_name": user.full_name,
             }
+        })
+
+class DashboardAPIView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        # سفارش‌ها
+        orders = Order.objects.filter(user=user).order_by('-created_at')
+        orders_data = DashboardOrderSerializer(orders, many=True).data
+
+        # تیکت‌ها
+        tickets = Ticket.objects.filter(user=user).order_by('-created_at')
+        tickets_data = DashboardTicketSerializer(tickets, many=True).data
+
+        # اعلان‌ها
+        announcements = Announcement.objects.filter(is_active=True).order_by('-start_date')
+        announcements_data = DashboardAnnouncementSerializer(announcements, many=True).data
+
+        return Response({
+            'orders': orders_data,
+            'tickets': tickets_data,
+            'announcements': announcements_data
         })

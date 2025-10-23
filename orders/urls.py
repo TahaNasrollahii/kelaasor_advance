@@ -1,7 +1,8 @@
 from django.urls import path
 from .views import (
     CartDetailAPIView, CartAddItemAPIView,
-    CheckoutAPIView, UserOrdersAPIView, ApplyDiscountCodeAPIView,
+    CheckoutAPIView, UserOrdersAPIView,
+    ApplyDiscountCodeAPIView, DiscountCodeListAPIView,
 )
 
 app_name = "orders"
@@ -18,6 +19,9 @@ urlpatterns = [
 
     # لیست سفارش‌های کاربر
     path('orders/', UserOrdersAPIView.as_view(), name='user-orders'),
+
+    # لیست کد تخفیف ها
+    path('discounts/', DiscountCodeListAPIView.as_view(), name='discount-list'),
 
     # اعمال کد تخفیف
     path('apply-discount/', ApplyDiscountCodeAPIView.as_view(), name='apply-discount'),

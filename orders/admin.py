@@ -48,6 +48,7 @@ class CartAdmin(admin.ModelAdmin):
 
 @admin.register(DiscountCode)
 class DiscountCodeAdmin(admin.ModelAdmin):
-    list_display = ['code', 'discount_type', 'value', 'is_active', 'used_count', 'usage_limit', 'valid_from', 'valid_to']
-    list_filter = ['discount_type', 'is_active']
-    search_fields = ['code', 'specific_user__username', 'specific_course__title']
+    list_display = ['code', 'discount_type', 'value', 'user', 'course', 'is_active', 'active_from', 'active_until', 'used_count', 'max_usage']
+    list_filter = ['discount_type', 'is_active', 'active_from', 'active_until']
+    search_fields = ['code', 'user__username', 'course__title']
+    ordering = ['-active_from']

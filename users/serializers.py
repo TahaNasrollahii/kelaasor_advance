@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from django.utils import timezone
-from .models import User, OTP
+from orders.models import OrderItem, Order
+from support.models import Ticket
+from support.serializers import TicketReplySerializer
+from .models import User, OTP, Announcement
 
 
 class SendOTPSerializer(serializers.Serializer):
@@ -58,3 +61,30 @@ class VerifyOTPSerializer(serializers.Serializer):
 
         validated_data['user'] = user
         return validated_data
+
+
+class DashboardOrderItemSerializer(serializers.ModelSerializer):
+    course_title = serializers.CharField(source='course.title', read_only=True)
+
+    class Meta:
+        model = OrderItem
+        fields = ['course', 'course_title', 'price', 'quantity']
+
+class DashboardOrderSerializer(serializers.ModelSerializer):
+    items = DashboardOrderItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ['id', 'total_amount', 'status', 'discount_code', 'created_at', 'items']
+
+class DashboardTicketSerializer(serializers.ModelSerializer):
+    replies = TicketReplySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Ticket
+        fields = ['id', 'title', 'status', 'department', 'created_at', 'updated_at', 'replies']
+
+class DashboardAnnouncementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Announcement
+        fields = ['id', 'title', 'content', 'start_date', 'end_date', 'is_active']

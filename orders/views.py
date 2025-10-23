@@ -81,6 +81,17 @@ class UserOrdersAPIView(generics.ListAPIView):
         return Order.objects.filter(user=self.request.user).order_by('-created_at')
 
 
+class DiscountCodeListAPIView(generics.ListAPIView):
+    serializer_class = DiscountCodeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # فقط کدهای فعال
+        from django.utils import timezone
+        now = timezone.now()
+        return DiscountCode.objects.filter(is_active=True, active_from__lte=now, active_until__gte=now)
+
+
 class ApplyDiscountCodeAPIView(generics.GenericAPIView):
     serializer_class = DiscountCodeSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -88,32 +99,34 @@ class ApplyDiscountCodeAPIView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         code_str = request.data.get('code')
         course_id = request.data.get('course_id')
+        user = request.user
+
+        if not code_str or not course_id:
+            return Response({'detail': 'code و course_id الزامی هستند'}, status=400)
 
         try:
-            discount = DiscountCode.objects.get(code=code_str, is_active=True)
+            discount = DiscountCode.objects.get(code=code_str)
         except DiscountCode.DoesNotExist:
-            return Response({'detail': 'Invalid code'}, status=400)
+            return Response({'detail': 'کد تخفیف یافت نشد'}, status=404)
 
-        # بررسی بازه زمانی
-        now = timezone.now()
-        if (discount.valid_from and discount.valid_from > now) or (discount.valid_to and discount.valid_to < now):
-            return Response({'detail': 'Code not valid at this time'}, status=400)
+        from courses.models import Course
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return Response({'detail': 'دوره یافت نشد'}, status=404)
 
-        # بررسی محدودیت کاربر/دوره
-        if discount.specific_user and discount.specific_user != request.user:
-            return Response({'detail': 'Code not valid for this user'}, status=400)
-        if discount.specific_course and str(discount.specific_course.id) != str(course_id):
-            return Response({'detail': 'Code not valid for this course'}, status=400)
+        if not discount.can_use(user, course):
+            return Response({'detail': 'کد تخفیف معتبر نیست یا شرایط استفاده را ندارد'}, status=400)
 
-        # بررسی تعداد استفاده
-        if discount.usage_limit and discount.used_count >= discount.usage_limit:
-            return Response({'detail': 'Code usage limit reached'}, status=400)
-
-        # اعمال تخفیف
         discount.used_count += 1
         discount.save()
 
-        return Response({'detail': 'Discount applied', 'discount_type': discount.discount_type, 'value': discount.value})
+        data = {
+            'code': discount.code,
+            'discount_type': discount.discount_type,
+            'value': discount.value
+        }
+        return Response(data)
 
 
 class CheckoutAPIView(generics.GenericAPIView):

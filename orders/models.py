@@ -2,8 +2,8 @@ from django.db import models
 from django.conf import settings
 from courses.models import Course
 
-User = settings.AUTH_USER_MODEL
 
+User = settings.AUTH_USER_MODEL
 
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
@@ -58,16 +58,41 @@ class Payment(models.Model):
 
 
 class DiscountCode(models.Model):
+    CODE_TYPE_CHOICES = [
+        ('percent', 'درصدی'),
+        ('fixed', 'مقدار ریالی'),
+    ]
+
     code = models.CharField(max_length=50, unique=True)
-    is_active = models.BooleanField(default=True)
-    discount_type = models.CharField(max_length=10, choices=[('percent', 'Percent'), ('fixed', 'Fixed')])
+    description = models.TextField(blank=True)
+    discount_type = models.CharField(max_length=10, choices=CODE_TYPE_CHOICES)
     value = models.DecimalField(max_digits=10, decimal_places=2)
-    usage_limit = models.PositiveIntegerField(blank=True, null=True)  # None = unlimited
+    active_from = models.DateTimeField()
+    active_until = models.DateTimeField()
+    max_usage = models.PositiveIntegerField(null=True, blank=True, help_text='حداکثر تعداد استفاده کد')
     used_count = models.PositiveIntegerField(default=0)
-    valid_from = models.DateTimeField(blank=True, null=True)
-    valid_to = models.DateTimeField(blank=True, null=True)
-    specific_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    specific_course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, help_text='اختصاصی به کاربر')
+    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True, help_text='اختصاصی به دوره')
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.code
+
+    def can_use(self, user, course):
+        from django.utils import timezone
+        now = timezone.now()
+        if not self.is_active:
+            return False
+        if self.active_from > now or self.active_until < now:
+            return False
+        if self.max_usage is not None and self.used_count >= self.max_usage:
+            return False
+        if self.user and self.user != user:
+            return False
+        if self.course and self.course != course:
+            return False
+        return True
+
+    def increment_usage(self):
+        self.used_count += 1
+        self.save()

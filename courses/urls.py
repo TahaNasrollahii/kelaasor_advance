@@ -6,6 +6,8 @@ from .views import (
     ChapterDetailAPIView, VideoDetailAPIView, AttachmentDetailAPIView
 )
 
+app_name = "courses"
+
 urlpatterns = [
     path('categories/', CategoryListAPIView.as_view(), name='category-list'),
     path('categories/<slug:slug>/', CategoryDetailAPIView.as_view(), name='category-detail'),
