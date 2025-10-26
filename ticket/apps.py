@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class OrdersConfig(AppConfig):
+class TicketConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'orders'
+    name = 'ticket'

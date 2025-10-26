@@ -42,8 +42,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'users',
     'courses',
-    'orders',
-    'support'
+    'purchase',
+    'ticket'
 ]
 
 AUTH_USER_MODEL = 'users.User'
