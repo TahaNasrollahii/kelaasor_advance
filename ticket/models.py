@@ -10,7 +10,6 @@ class Ticket(models.Model):
         ('in_progress', 'In Progress'),
         ('closed', 'Closed'),
     ]
-
     DEPARTMENT_CHOICES = [
         ('support', 'Support'),
         ('finance', 'Finance'),
@@ -18,7 +17,6 @@ class Ticket(models.Model):
     ]
 
     title = models.CharField(max_length=255)
-    content = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tickets')
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
@@ -31,11 +29,11 @@ class Ticket(models.Model):
         return f"{self.title} ({self.user.username})"
 
 
-class TicketReply(models.Model):
-    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='replies')
+class TicketMessage(models.Model):
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
-    content = models.TextField()
+    message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Reply by {self.sender.username} on Ticket {self.ticket.id}"
+        return f"Message by {self.sender.username} on Ticket {self.ticket.id}"
