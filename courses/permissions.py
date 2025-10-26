@@ -1,5 +1,5 @@
 from rest_framework import permissions
-from store.models import Enrollment  # فرض: Enrollment در اپ store وجود دارد
+from purchase.models import Enrollment
 
 class IsEnrolledOrVideoIsFree(permissions.BasePermission):
     """
