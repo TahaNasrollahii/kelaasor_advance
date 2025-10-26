@@ -2,15 +2,15 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from ticket.models import Ticket, TicketMessage
 from admin_panel.permissions import IsAdminOrSupport
+from django.utils import timezone
 from admin_panel.serializers.tickets import (
     TicketListSerializer,
     TicketDetailSerializer,
     TicketReplySerializer,
 )
-from django.utils import timezone
 
 
-class TicketListAPIView(generics.ListAPIView):
+class AdminTicketListAPIView(generics.ListAPIView):
     """لیست تمام تیکت‌های کاربران"""
     serializer_class = TicketListSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdminOrSupport]
@@ -23,7 +23,7 @@ class TicketListAPIView(generics.ListAPIView):
         return queryset
 
 
-class TicketDetailAPIView(generics.RetrieveAPIView):
+class AdminTicketDetailAPIView(generics.RetrieveAPIView):
     """جزئیات تیکت شامل پیام‌ها"""
     queryset = Ticket.objects.all().select_related("user").prefetch_related("messages__sender")
     serializer_class = TicketDetailSerializer
