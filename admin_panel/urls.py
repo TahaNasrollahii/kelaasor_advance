@@ -1,4 +1,5 @@
 from django.urls import path
+from admin_panel.views.stats import AdminStatsAPIView
 from admin_panel.views.discounts import DiscountCodeListAPIView, DiscountCodeDetailAPIView
 from admin_panel.views.users import UserListAPIView, UserDetailAPIView, GroupListAPIView
 
@@ -12,4 +13,6 @@ urlpatterns = [
 
     path('discounts/', DiscountCodeListAPIView.as_view(), name='discount-list'),
     path('discounts/<int:id>/', DiscountCodeDetailAPIView.as_view(), name='discount-detail'),
+
+    path('stats/', AdminStatsAPIView.as_view(), name='admin-stats'),
 ]
