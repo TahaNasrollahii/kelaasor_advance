@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -140,8 +141,22 @@ REST_FRAMEWORK = {
     )
 }
 
-
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+}
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/1'
+
+# Optional: timezone
+CELERY_TIMEZONE = 'Asia/Tehran'
+CELERY_ENABLE_UTC = True
+
+CELERY_BEAT_SCHEDULE = {
+    'increase-online-course-price-daily': {
+        'task': 'courses.tasks.increase_online_course_price_before_deadline',
+        'schedule': crontab(hour=0, minute=0),  # هر روز ساعت 00:00
+    },
 }
