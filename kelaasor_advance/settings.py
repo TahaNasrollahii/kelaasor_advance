@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'users',
     'courses',
     'purchase',
-    'ticket'
+    'ticket',
+    'admin_panel'
 ]
 
 AUTH_USER_MODEL = 'users.User'
