@@ -2,7 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import (SendOTPSerializer, VerifyOTPSerializer)
+from .serializers import (SendOTPSerializer, VerifyOTPSerializer,
+                          ForgotPasswordSendOTPSerializer, ResetPasswordVerifySerializer)
 
 
 class SendOTPView(APIView):
@@ -34,3 +35,23 @@ class VerifyOTPView(APIView):
                 "full_name": user.full_name,
             }
         })
+
+
+class ForgotPasswordSendOTPView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = ForgotPasswordSendOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"detail": "Reset password OTP sent successfully."}, status=status.HTTP_200_OK)
+
+
+class ResetPasswordVerifyView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = ResetPasswordVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"detail": "Password has been reset successfully."}, status=status.HTTP_200_OK)
