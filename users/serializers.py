@@ -54,34 +54,8 @@ class SendOTPSerializer(serializers.Serializer):
 
 
 class VerifyOTPSerializer(serializers.Serializer):
-    mobile = serializers.CharField(max_length=15)
+    mobile = serializers.CharField(max_length=20)
     code = serializers.CharField(max_length=6)
-
-    def validate(self, data):
-        mobile = data['mobile'].strip()
-        code = data['code'].strip()
-        try:
-            otp = OTP.objects.filter(mobile=mobile, code=code, is_used=False).latest('created_at')
-        except OTP.DoesNotExist:
-            raise serializers.ValidationError("Invalid or expired code.")
-
-        if otp.is_expired:
-            raise serializers.ValidationError("Code expired. Please request a new one.")
-
-        data['otp'] = otp
-        return data
-
-    def create(self, validated_data):
-        otp = validated_data['otp']
-        otp.mark_used()
-
-        user, created = User.objects.get_or_create(mobile=otp.mobile)
-        if created:
-            user.set_unusable_password()
-            user.save()
-
-        validated_data['user'] = user
-        return validated_data
 
 
 class ForgotPasswordSendOTPSerializer(serializers.Serializer):

@@ -14,7 +14,7 @@ from admin_panel.views.tickets import (
 urlpatterns = [
     # Users & Groups
     path("users/", UserListAPIView.as_view(), name="user-list"),
-    path("users/<int:id>/", UserDetailAPIView.as_view(), name="user-detail"),
+    path("users/<uuid:id>/", UserDetailAPIView.as_view(), name="user-detail"),
     path("groups/", GroupListAPIView.as_view(), name="group-list"),
 
     # Orders

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from courses.models import Course
 
+
 User = get_user_model()
 
 class Ticket(models.Model):
@@ -26,7 +27,7 @@ class Ticket(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.title} ({self.user.username})"
+        return f"{self.title} ({self.user.full_name or self.user.mobile})"
 
 
 class TicketMessage(models.Model):
@@ -36,4 +37,4 @@ class TicketMessage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Message by {self.sender.username} on Ticket {self.ticket.id}"
+        return f"Message by {self.sender.full_name or self.sender.mobile} on Ticket {self.ticket.id}"

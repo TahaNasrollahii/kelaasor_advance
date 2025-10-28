@@ -1,7 +1,9 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from django.db.models import Q
+from admin_panel.permissions import IsAdminOrSupport
 from .models import Ticket, TicketMessage
+from .permissions import IsTicketOwnerOrSupport
 from .serializers import TicketSerializer, TicketMessageSerializer
 from .utils import send_ticket_reply_email, send_ticket_reply_sms
 
@@ -30,9 +32,9 @@ class TicketRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
         return Ticket.objects.filter(user=user).order_by('-created_at')
 
 
-class TicketReplyCreateAPIView(generics.CreateAPIView):
+class TicketMessageCreateAPIView(generics.CreateAPIView):
     serializer_class = TicketMessageSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsTicketOwnerOrSupport]
 
     def post(self, request, *args, **kwargs):
         ticket_id = request.data.get('ticket')

@@ -1,10 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
-from django.utils import timezone
 from django.core.validators import RegexValidator
 import uuid
 import random
 
+from django.utils import timezone
 
 PHONE_RE = RegexValidator(
     regex=r'^\+98\d{9}$',
@@ -105,6 +105,9 @@ class OTP(models.Model):
     is_used = models.BooleanField(default=False)
     purpose = models.CharField(max_length=50, default='login')  # login, reset_pass, verify_mobile, ...
     ip_address = models.CharField(max_length=45, blank=True, null=True)
+    attempts = models.PositiveIntegerField(default=0)
+    max_attempts = models.PositiveIntegerField(default=5)
+    locked_until = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         indexes = [
@@ -124,6 +127,15 @@ class OTP(models.Model):
     def generate_code(length=6):
         """Generate numeric OTP code as string."""
         return ''.join(str(random.randint(0, 9)) for _ in range(length))
+
+    def can_attempt(self):
+        return not (self.locked_until and self.locked_until > timezone.now())
+
+    def register_failed_attempt(self):
+        self.attempts += 1
+        if self.attempts >= self.max_attempts:
+            self.locked_until = timezone.now() + timezone.timedelta(minutes=15)
+        self.save(update_fields=['attempts', 'locked_until'])
 
     @classmethod
     def create_otp(cls, mobile, ttl_seconds=300, purpose='login', ip_address=None):

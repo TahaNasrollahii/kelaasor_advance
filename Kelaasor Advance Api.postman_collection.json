@@ -1,18 +1,18 @@
 {
 	"info": {
-		"_postman_id": "a44f0477-d965-4bd9-bda1-dec402f04e89",
-		"name": "Kelaasor_advance API",
-		"description": "Postman Collection generated from latest Django/DRF code.\nGlobal auth = Bearer {{access_token}}. Public endpoints explicitly set to noauth.",
+		"_postman_id": "450f3144-7225-439a-9c0b-e023036f376d",
+		"name": "Kelaasor Advance Api",
+		"description": "## 🧩 Kelaasor API — Overview\n\n### 🎯 Introduction\n\n**Kelaasor API** is a complete backend built with **Django REST Framework**, providing endpoints for user authentication, online course management, purchase workflows, discount systems, support tickets, and an administrative dashboard.\n\nThis Postman collection allows developers and QA engineers to test every workflow — from OTP-based login and course browsing to checkout, order processing, and admin actions — all in one place.\n\n---\n\n### 🔐 Authentication & Authorization\n\nAuthentication is powered by **Simple JWT** combined with an **OTP-based login system**.\n\n- Users authenticate via mobile phone number.\n    \n- Upon OTP verification, the API issues two tokens:\n    - `access` – short-lived bearer token\n        \n    - `refresh` – long-lived token for renewal\n        \n- Tokens are automatically stored in collection variables and applied to all subsequent authorized requests.\n    \n\n**Header format:**\n\n```\nAuthorization: Bearer {{access_token}}\n\n ```\n\n> Public endpoints (such as course catalog) are explicitly marked with `noauth`. \n  \n\n---\n\n### 📂 Folder Structure\n\n#### **1\\. Users (Auth)**\n\nHandles registration, authentication, and password recovery:\n\n- `POST /api/users/register/` — Register a new user\n    \n- `POST /api/users/send-otp/` — Request OTP for login\n    \n- `POST /api/users/verify-otp/` — Verify OTP and obtain JWT tokens\n    \n- `POST /api/users/token/`, `POST /api/users/token/refresh/` — Standard JWT login/refresh\n    \n- `POST /api/users/password/forgot/` and `/password/reset/` — Forgot/reset password flows\n    \n\n#### **2\\. User Panel**\n\nAuthenticated endpoints for end-users:\n\n- `GET /api/user_panel/dashboard/` — Returns user profile, recent orders, tickets, and announcements.\n    \n\n#### **3\\. Courses (Public)**\n\nPublic, read-only course catalog:\n\n- List categories, instructors, and available courses\n    \n- View course detail, chapters, videos, and attachments\n    \n\n#### **4\\. Tickets (User)**\n\nUser-facing support system:\n\n- Create, list, update, and view personal tickets\n    \n- `POST /api/tickets/tickets/reply/` — Add a reply to an existing ticket\n    \n\n#### **5\\. Purchase / Cart / Orders / Discounts**\n\nFull e-commerce workflow:\n\n- `GET /api/purchase/cart/` — Retrieve user cart\n    \n- `POST /api/purchase/cart/add/` — Add a course to cart\n    \n- `GET /api/purchase/orders/` — List all orders\n    \n- `POST /api/purchase/apply-discount/` — Apply a discount code\n    \n- `POST /api/purchase/checkout/` — Finalize checkout and confirm payment\n    \n\n#### **6\\. Admin Panel**\n\nAdministrative APIs for internal staff:\n\n- Manage users, groups, orders, tickets, and discount codes\n    \n- View statistics and notifications\n    \n- Endpoints require staff/admin JWT tokens\n    \n\n---\n\n### ⚙️ Environment Variables\n\n| Variable | Description |\n| --- | --- |\n| `base_url` | Base API URL (default: `http://localhost:8000`) |\n| `mobile` | Test user’s mobile number |\n| `otp_code` | Test OTP code (for development) |\n| `access_token` | Access JWT (automatically set after OTP verification) |\n| `refresh_token` | Refresh JWT (automatically set after OTP verification) |\n\n---\n\n### 🧪 Testing Workflow\n\n1. Run **Send OTP** → then **Verify OTP → tokens** to retrieve and store JWTs.\n    \n2. Once tokens are set, all authenticated requests will automatically include them.\n    \n3. For purchasing flow:\n    - Add a course to the cart\n        \n    - Optionally apply a discount code\n        \n    - Call **Checkout** to complete the order\n        \n\n---\n\n### 🧱 Technologies\n\n- **Django REST Framework (DRF)**\n    \n- **Simple JWT** for token-based authentication\n    \n- **PostgreSQL** as the database\n    \n- **Redis / Celery** (optional) for asynchronous OTP delivery\n    \n\n---\n\n### 💡 Developer Notes\n\n- All endpoints are prefixed with `/api/`.\n    \n- Responses are in JSON (UTF-8 encoded).\n    \n- Date/time fields use ISO 8601 format (`YYYY-MM-DDTHH:MM:SSZ`).\n    \n- Standard DRF pagination, filtering, and ordering are supported.\n    \n- Errors follow the DRF pattern with `detail` or `errors` fields.\n    \n\n---\n\n### 📘 Quick Start\n\n1. Import the collection `kelaasor_postman_collection_latest.json`\n    \n2. Import the environment `kelaasor_postman_environment_latest.json`\n    \n3. Set your `base_url` and `mobile` variables\n    \n4. Run the auth flow and begin testing any feature instantly",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "22116916",
-		"_collection_link": "https://test88-3870.postman.co/workspace/49b3ddec-9287-4b1d-89fe-9c815c1e6d6f/collection/22116916-a44f0477-d965-4bd9-bda1-dec402f04e89?action=share&source=collection_link&creator=22116916"
+		"_collection_link": "https://test88-3870.postman.co/workspace/49b3ddec-9287-4b1d-89fe-9c815c1e6d6f/collection/22116916-450f3144-7225-439a-9c0b-e023036f376d?action=share&source=collection_link&creator=22116916"
 	},
 	"item": [
 		{
-			"name": "Users",
+			"name": "Users (Auth)",
 			"item": [
 				{
-					"name": "Register",
+					"name": "Register (SimpleJWT on success)",
 					"event": [
 						{
 							"listen": "test",
@@ -20,8 +20,10 @@
 								"type": "text/javascript",
 								"exec": [
 									"",
-									"pm.test(\"201 Created\", function(){ pm.response.to.have.status(201); });",
-									"var j=pm.response.json(); if(j.access){pm.collectionVariables.set(\"access_token\", j.access);} if(j.refresh){pm.collectionVariables.set(\"refresh_token\", j.refresh);}"
+									"pm.test('201 Created', function(){ pm.response.to.have.status(201); });",
+									"var j = pm.response.json();",
+									"if (j.access) pm.collectionVariables.set('access_token', j.access);",
+									"if (j.refresh) pm.collectionVariables.set('refresh_token', j.refresh);"
 								]
 							}
 						}
@@ -39,7 +41,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"mobile\": \"+989100000000\",\n  \"full_name\": \"کاربر نمونه\",\n  \"password\": \"StrongPass!123\",\n  \"password2\": \"StrongPass!123\"\n}"
+							"raw": "{\n  \"mobile\": \"{{mobile}}\",\n  \"full_name\": \"Test User\",\n  \"password\": \"P@ssw0rd123\",\n  \"password2\": \"P@ssw0rd123\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users/register",
@@ -51,21 +53,20 @@
 								"users",
 								"register"
 							]
-						}
+						},
+						"description": "Create a user via RegisterView; returns access/refresh on success."
 					},
 					"response": []
 				},
 				{
-					"name": "Token - Obtain Pair",
+					"name": "Send OTP (login)",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"",
-									"pm.test(\"200 OK or 401\", function(){ pm.expect([200,401]).to.include(pm.response.code); });",
-									"if(pm.response.code===200){var j=pm.response.json(); if(j.access){pm.collectionVariables.set(\"access_token\", j.access);} if(j.refresh){pm.collectionVariables.set(\"refresh_token\", j.refresh);}}"
+									"pm.test('200 OK', function(){ pm.response.to.have.status(200); });"
 								]
 							}
 						}
@@ -83,7 +84,103 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"your_username_or_mobile\",\n  \"password\": \"your_password\"\n}"
+							"raw": "{\n  \"mobile\": \"{{mobile}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/send-otp",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"send-otp"
+							]
+						},
+						"description": "Send OTP for login. In dev, code is created in DB; you may inspect logs/DB."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify OTP → tokens",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test('200 OK', function(){ pm.response.to.have.status(200); });",
+									"var j = pm.response.json();",
+									"if (j.access) pm.collectionVariables.set('access_token', j.access);",
+									"if (j.refresh) pm.collectionVariables.set('refresh_token', j.refresh);"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mobile\": \"{{mobile}}\",\n  \"code\": \"{{otp_code}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/verify-otp",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"verify-otp"
+							]
+						},
+						"description": "Verifies OTP and issues SimpleJWT tokens (uses VerifyOTPAPIView)."
+					},
+					"response": []
+				},
+				{
+					"name": "SimpleJWT — Obtain Pair",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test('200/401', function(){ pm.expect([200,401]).to.include(pm.response.code); });",
+									"if (pm.response.code === 200) {",
+									"  var j = pm.response.json();",
+									"  if (j.access) pm.collectionVariables.set('access_token', j.access);",
+									"  if (j.refresh) pm.collectionVariables.set('refresh_token', j.refresh);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"{{mobile}}\",\n  \"password\": \"P@ssw0rd123\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users/token",
@@ -95,12 +192,13 @@
 								"users",
 								"token"
 							]
-						}
+						},
+						"description": "Only if password login is enabled in parallel with OTP."
 					},
 					"response": []
 				},
 				{
-					"name": "Token - Refresh",
+					"name": "SimpleJWT — Refresh",
 					"event": [
 						{
 							"listen": "test",
@@ -108,8 +206,11 @@
 								"type": "text/javascript",
 								"exec": [
 									"",
-									"pm.test(\"200 OK or 401\", function(){ pm.expect([200,401]).to.include(pm.response.code); });",
-									"if(pm.response.code===200){var j=pm.response.json(); if(j.access){pm.collectionVariables.set(\"access_token\", j.access);}}"
+									"pm.test('200/401', function(){ pm.expect([200,401]).to.include(pm.response.code); });",
+									"if (pm.response.code === 200) {",
+									"  var j = pm.response.json();",
+									"  if (j.access) pm.collectionVariables.set('access_token', j.access);",
+									"}"
 								]
 							}
 						}
@@ -145,14 +246,14 @@
 					"response": []
 				},
 				{
-					"name": "Send OTP",
+					"name": "Forgot Password — Send OTP",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"pm.test('200', function(){ pm.response.to.have.status(200); });"
+									"pm.test('200 OK', function(){ pm.response.to.have.status(200); });"
 								]
 							}
 						}
@@ -170,93 +271,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"mobile\": \"+989100000000\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/users/send-otp",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"users",
-								"send-otp"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Verify OTP (Login)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"",
-									"pm.test(\"200\", function(){ pm.response.to.have.status(200); });",
-									"var j=pm.response.json(); if(j.access){pm.collectionVariables.set(\"access_token\", j.access);} if(j.refresh){pm.collectionVariables.set(\"refresh_token\", j.refresh);}"
-								]
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"mobile\": \"+989100000000\",\n  \"code\": \"123456\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/users/verify-otp",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"users",
-								"verify-otp"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Forgot Password - Send OTP",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"pm.test('200', function(){ pm.response.to.have.status(200); });"
-								]
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"mobile\": \"+989100000000\"\n}"
+							"raw": "{\n  \"mobile\": \"{{mobile}}\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users/password/forgot",
@@ -274,14 +289,14 @@
 					"response": []
 				},
 				{
-					"name": "Reset Password - Verify",
+					"name": "Reset Password — Verify & Set",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"pm.test('200', function(){ pm.response.to.have.status(200); });"
+									"pm.test('200 OK', function(){ pm.response.to.have.status(200); });"
 								]
 							}
 						}
@@ -299,7 +314,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"mobile\": \"+989100000000\",\n  \"code\": \"123456\",\n  \"new_password\": \"NewPass!123\"\n}"
+							"raw": "{\n  \"mobile\": \"{{mobile}}\",\n  \"code\": \"{{otp_code}}\",\n  \"new_password\": \"NewP@ssw0rd123\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users/password/reset",
@@ -322,7 +337,7 @@
 			"name": "User Panel",
 			"item": [
 				{
-					"name": "Dashboard (orders, tickets, announcements)",
+					"name": "Dashboard",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -342,7 +357,7 @@
 								"dashboard"
 							]
 						},
-						"description": "Requires Authorization header (IsAuthenticated)."
+						"description": "Returns orders, tickets, announcements for the authenticated user."
 					},
 					"response": []
 				}
@@ -567,7 +582,7 @@
 					"response": []
 				},
 				{
-					"name": "Video Detail (by course slug + video id)",
+					"name": "Video Detail",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -600,7 +615,7 @@
 								}
 							]
 						},
-						"description": "If video/course is protected, server enforces permission; endpoint itself is readable."
+						"description": "Replace :course_slug and :video_id"
 					},
 					"response": []
 				},
@@ -644,7 +659,7 @@
 			"name": "Tickets (User)",
 			"item": [
 				{
-					"name": "List/Create Tickets - LIST",
+					"name": "List My/Public Tickets",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -663,7 +678,8 @@
 								"tickets",
 								"tickets"
 							]
-						}
+						},
+						"description": "User's own or public tickets."
 					},
 					"response": []
 				},
@@ -675,7 +691,7 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"pm.test('200/201', function(){ pm.expect([200,201]).to.include(pm.response.code); });"
+									"pm.test('201 Created', function(){ pm.expect([201,200]).to.include(pm.response.code); });"
 								]
 							}
 						}
@@ -733,12 +749,12 @@
 								}
 							]
 						},
-						"description": "Replace :pk"
+						"description": "Replace :pk (int)"
 					},
 					"response": []
 				},
 				{
-					"name": "Ticket Update (PUT)",
+					"name": "Update Ticket (PUT)",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -749,7 +765,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"title\": \"به‌روزرسانی عنوان\",\n  \"course\": 1,\n  \"status\": \"in_progress\",\n  \"department\": \"support\",\n  \"is_public\": false\n}"
+							"raw": "{\n  \"title\": \"آپدیت عنوان\",\n  \"course\": 1,\n  \"status\": \"in_progress\",\n  \"department\": \"support\",\n  \"is_public\": false\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/tickets/tickets/:pk",
@@ -768,7 +784,7 @@
 								}
 							]
 						},
-						"description": "Replace :pk"
+						"description": "Replace :pk (int)"
 					},
 					"response": []
 				},
@@ -780,7 +796,7 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"pm.test('201', function(){ pm.response.to.have.status(201); });"
+									"pm.test('201 Created', function(){ pm.response.to.have.status(201); });"
 								]
 							}
 						}
@@ -795,7 +811,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"ticket\": 1,\n  \"message\": \"متشکرم از پاسخ شما\"\n}"
+							"raw": "{\n  \"ticket\": 1,\n  \"message\": \"پاسخ نمونه\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/tickets/tickets/reply",
@@ -808,7 +824,8 @@
 								"tickets",
 								"reply"
 							]
-						}
+						},
+						"description": "Requires owner or support permission."
 					},
 					"response": []
 				}
@@ -849,7 +866,7 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"pm.test('201 or 400', function(){ pm.expect([201,400]).to.include(pm.response.code); });"
+									"pm.test('201/400', function(){ pm.expect([201,400]).to.include(pm.response.code); });"
 								]
 							}
 						}
@@ -969,14 +986,14 @@
 					"response": []
 				},
 				{
-					"name": "Checkout (participants + discount_code)",
+					"name": "Checkout (optional discount_code)",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"pm.test('201 Created or 200', function(){ pm.expect([201,200]).to.include(pm.response.code); });"
+									"pm.test('201/200', function(){ pm.expect([201,200]).to.include(pm.response.code); });"
 								]
 							}
 						}
@@ -991,7 +1008,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"items\": [\n    {\n      \"course_id\": 1,\n      \"participants\": [\n        {\n          \"full_name\": \"Ali Rezaei\",\n          \"email\": \"ali@example.com\",\n          \"mobile\": \"+989120000001\"\n        }\n      ]\n    }\n  ],\n  \"discount_code\": \"OFF10\"\n}"
+							"raw": "{\n  \"discount_code\": \"OFF10\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/purchase/checkout",
@@ -1004,7 +1021,7 @@
 								"checkout"
 							]
 						},
-						"description": "Creates paid order, returns {detail, order_id, total_amount} on success."
+						"description": "Finalizes pending order, sets status to paid (sample), creates Payment & Enrollments."
 					},
 					"response": []
 				}
@@ -1014,7 +1031,7 @@
 			"name": "Admin Panel",
 			"item": [
 				{
-					"name": "List Users",
+					"name": "List Users (admin)",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1038,7 +1055,7 @@
 					"response": []
 				},
 				{
-					"name": "User Detail",
+					"name": "User Detail (admin)",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1064,12 +1081,12 @@
 								}
 							]
 						},
-						"description": "Replace :id"
+						"description": "Replace :id (UUID)"
 					},
 					"response": []
 				},
 				{
-					"name": "Update User (PUT)",
+					"name": "Update User (admin, PUT)",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -1080,7 +1097,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"new@example.com\",\n  \"first_name\": \"New\",\n  \"last_name\": \"Name\",\n  \"is_active\": true,\n  \"groups\": [\n    {\n      \"name\": \"staff\"\n    }\n  ]\n}"
+							"raw": "{\n  \"email\": \"new@example.com\",\n  \"full_name\": \"New Name\",\n  \"is_active\": true,\n  \"groups\": [\n    {\n      \"name\": \"Support\"\n    }\n  ]\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/admin-panel/users/:id",
@@ -1099,12 +1116,12 @@
 								}
 							]
 						},
-						"description": "Replace :id"
+						"description": "Replace :id (UUID)"
 					},
 					"response": []
 				},
 				{
-					"name": "List Groups",
+					"name": "List Groups (admin)",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1128,7 +1145,7 @@
 					"response": []
 				},
 				{
-					"name": "List Orders",
+					"name": "List Orders (admin)",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1152,7 +1169,7 @@
 					"response": []
 				},
 				{
-					"name": "List Orders (filter by status)",
+					"name": "List Orders (admin, status=paid)",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1183,7 +1200,7 @@
 					"response": []
 				},
 				{
-					"name": "Order Detail",
+					"name": "Order Detail (admin)",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1209,12 +1226,12 @@
 								}
 							]
 						},
-						"description": "Replace :pk"
+						"description": "Replace :pk (int)"
 					},
 					"response": []
 				},
 				{
-					"name": "List Tickets",
+					"name": "List Tickets (admin/support)",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1238,7 +1255,7 @@
 					"response": []
 				},
 				{
-					"name": "Ticket Detail",
+					"name": "Ticket Detail (admin/support)",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1264,7 +1281,7 @@
 								}
 							]
 						},
-						"description": "Replace :id"
+						"description": "Replace :id (int)"
 					},
 					"response": []
 				},
@@ -1300,7 +1317,7 @@
 								}
 							]
 						},
-						"description": "Replace :id"
+						"description": "Replace :id (int)"
 					},
 					"response": []
 				},
@@ -1355,7 +1372,7 @@
 								}
 							]
 						},
-						"description": "Replace :id"
+						"description": "Replace :id (int)"
 					},
 					"response": []
 				},
@@ -1390,7 +1407,7 @@
 								}
 							]
 						},
-						"description": "Replace :id"
+						"description": "Replace :id (int)"
 					},
 					"response": []
 				},
@@ -1421,7 +1438,7 @@
 								}
 							]
 						},
-						"description": "Replace :id"
+						"description": "Replace :id (int)"
 					},
 					"response": []
 				},
@@ -1505,7 +1522,7 @@
 								}
 							]
 						},
-						"description": "Replace :id"
+						"description": "Replace :id (int)"
 					},
 					"response": []
 				}
@@ -1534,6 +1551,14 @@
 		{
 			"key": "refresh_token",
 			"value": ""
+		},
+		{
+			"key": "mobile",
+			"value": "+989100000000"
+		},
+		{
+			"key": "otp_code",
+			"value": "123456"
 		}
 	]
 }

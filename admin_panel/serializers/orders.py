@@ -11,15 +11,18 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 
 class OrderListSerializer(serializers.ModelSerializer):
-    user_name = serializers.CharField(source='user.username', read_only=True)
+    user_display = serializers.SerializerMethodField()
     total_items = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ['id', 'user_name', 'status', 'total_amount', 'discount_code', 'created_at', 'total_items']
+        fields = ['id', 'user_display', 'status', 'total_amount', 'discount_code', 'created_at', 'total_items']
 
     def get_total_items(self, obj):
         return obj.items.count()
+
+    def get_user_display(self, obj):
+        return obj.user.full_name or obj.user.mobile
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):

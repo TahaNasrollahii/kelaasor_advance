@@ -80,6 +80,9 @@ class Video(models.Model):
     video_file = models.FileField(upload_to='courses/videos/')
     duration = models.PositiveIntegerField(help_text="مدت ویدیو به دقیقه")
     order = models.PositiveIntegerField(default=0)
+    is_free = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['order']

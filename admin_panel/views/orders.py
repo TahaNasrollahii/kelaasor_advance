@@ -12,7 +12,7 @@ class AdminOrderListAPIView(generics.ListAPIView):
     serializer_class = OrderListSerializer
     permission_classes = [IsAdminOrSupport]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['user__username', 'user__email']
+    search_fields = ['user__mobile', 'user__email', 'user__full_name']
     ordering_fields = ['created_at', 'total_amount']
     ordering = ['-created_at']
 
