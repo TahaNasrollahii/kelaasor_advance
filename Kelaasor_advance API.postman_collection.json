@@ -1,0 +1,1539 @@
+{
+	"info": {
+		"_postman_id": "a44f0477-d965-4bd9-bda1-dec402f04e89",
+		"name": "Kelaasor_advance API",
+		"description": "Postman Collection generated from latest Django/DRF code.\nGlobal auth = Bearer {{access_token}}. Public endpoints explicitly set to noauth.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "22116916",
+		"_collection_link": "https://test88-3870.postman.co/workspace/49b3ddec-9287-4b1d-89fe-9c815c1e6d6f/collection/22116916-a44f0477-d965-4bd9-bda1-dec402f04e89?action=share&source=collection_link&creator=22116916"
+	},
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"201 Created\", function(){ pm.response.to.have.status(201); });",
+									"var j=pm.response.json(); if(j.access){pm.collectionVariables.set(\"access_token\", j.access);} if(j.refresh){pm.collectionVariables.set(\"refresh_token\", j.refresh);}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mobile\": \"+989100000000\",\n  \"full_name\": \"کاربر نمونه\",\n  \"password\": \"StrongPass!123\",\n  \"password2\": \"StrongPass!123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Token - Obtain Pair",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"200 OK or 401\", function(){ pm.expect([200,401]).to.include(pm.response.code); });",
+									"if(pm.response.code===200){var j=pm.response.json(); if(j.access){pm.collectionVariables.set(\"access_token\", j.access);} if(j.refresh){pm.collectionVariables.set(\"refresh_token\", j.refresh);}}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"your_username_or_mobile\",\n  \"password\": \"your_password\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/token",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Token - Refresh",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"200 OK or 401\", function(){ pm.expect([200,401]).to.include(pm.response.code); });",
+									"if(pm.response.code===200){var j=pm.response.json(); if(j.access){pm.collectionVariables.set(\"access_token\", j.access);}}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/token/refresh",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"token",
+								"refresh"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send OTP",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('200', function(){ pm.response.to.have.status(200); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mobile\": \"+989100000000\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/send-otp",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"send-otp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify OTP (Login)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"200\", function(){ pm.response.to.have.status(200); });",
+									"var j=pm.response.json(); if(j.access){pm.collectionVariables.set(\"access_token\", j.access);} if(j.refresh){pm.collectionVariables.set(\"refresh_token\", j.refresh);}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mobile\": \"+989100000000\",\n  \"code\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/verify-otp",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"verify-otp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password - Send OTP",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('200', function(){ pm.response.to.have.status(200); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mobile\": \"+989100000000\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/password/forgot",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"password",
+								"forgot"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password - Verify",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('200', function(){ pm.response.to.have.status(200); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mobile\": \"+989100000000\",\n  \"code\": \"123456\",\n  \"new_password\": \"NewPass!123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/password/reset",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"password",
+								"reset"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Panel",
+			"item": [
+				{
+					"name": "Dashboard (orders, tickets, announcements)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user_panel/dashboard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"user_panel",
+								"dashboard"
+							]
+						},
+						"description": "Requires Authorization header (IsAuthenticated)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Courses (Public)",
+			"item": [
+				{
+					"name": "List Categories",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/categories",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Category Detail",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/categories/:slug",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"categories",
+								":slug"
+							],
+							"variable": [
+								{
+									"key": "slug"
+								}
+							]
+						},
+						"description": "Replace :slug"
+					},
+					"response": []
+				},
+				{
+					"name": "List Instructors",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/instructors",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"instructors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Instructor Detail",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/instructors/:pk",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"instructors",
+								":pk"
+							],
+							"variable": [
+								{
+									"key": "pk"
+								}
+							]
+						},
+						"description": "Replace :pk"
+					},
+					"response": []
+				},
+				{
+					"name": "List Courses",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Course Detail",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/:slug",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								":slug"
+							],
+							"variable": [
+								{
+									"key": "slug"
+								}
+							]
+						},
+						"description": "Replace :slug"
+					},
+					"response": []
+				},
+				{
+					"name": "Chapter Detail",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/chapters/:pk",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"chapters",
+								":pk"
+							],
+							"variable": [
+								{
+									"key": "pk"
+								}
+							]
+						},
+						"description": "Replace :pk"
+					},
+					"response": []
+				},
+				{
+					"name": "Video Detail (by course slug + video id)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/:course_slug/videos/:video_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								":course_slug",
+								"videos",
+								":video_id"
+							],
+							"variable": [
+								{
+									"key": "course_slug"
+								},
+								{
+									"key": "video_id"
+								}
+							]
+						},
+						"description": "If video/course is protected, server enforces permission; endpoint itself is readable."
+					},
+					"response": []
+				},
+				{
+					"name": "Attachment Detail",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/attachments/:pk",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"attachments",
+								":pk"
+							],
+							"variable": [
+								{
+									"key": "pk"
+								}
+							]
+						},
+						"description": "Replace :pk"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tickets (User)",
+			"item": [
+				{
+					"name": "List/Create Tickets - LIST",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tickets/tickets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tickets",
+								"tickets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Ticket",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('200/201', function(){ pm.expect([200,201]).to.include(pm.response.code); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"مشکل ثبت نام\",\n  \"course\": 1,\n  \"status\": \"open\",\n  \"department\": \"support\",\n  \"is_public\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tickets/tickets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tickets",
+								"tickets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ticket Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tickets/tickets/:pk",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tickets",
+								"tickets",
+								":pk"
+							],
+							"variable": [
+								{
+									"key": "pk"
+								}
+							]
+						},
+						"description": "Replace :pk"
+					},
+					"response": []
+				},
+				{
+					"name": "Ticket Update (PUT)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"به‌روزرسانی عنوان\",\n  \"course\": 1,\n  \"status\": \"in_progress\",\n  \"department\": \"support\",\n  \"is_public\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tickets/tickets/:pk",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tickets",
+								"tickets",
+								":pk"
+							],
+							"variable": [
+								{
+									"key": "pk"
+								}
+							]
+						},
+						"description": "Replace :pk"
+					},
+					"response": []
+				},
+				{
+					"name": "Reply to Ticket",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('201', function(){ pm.response.to.have.status(201); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"ticket\": 1,\n  \"message\": \"متشکرم از پاسخ شما\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tickets/tickets/reply",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tickets",
+								"tickets",
+								"reply"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Purchase / Cart / Orders / Discounts",
+			"item": [
+				{
+					"name": "Cart Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/purchase/cart",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"purchase",
+								"cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Course to Cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('201 or 400', function(){ pm.expect([201,400]).to.include(pm.response.code); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"course\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/purchase/cart/add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"purchase",
+								"cart",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List My Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/purchase/orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"purchase",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Active Discount Codes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/purchase/discounts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"purchase",
+								"discounts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apply Discount to Course",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('200/400/404', function(){ pm.expect([200,400,404]).to.include(pm.response.code); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"OFF10\",\n  \"course_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/purchase/apply-discount",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"purchase",
+								"apply-discount"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Checkout (participants + discount_code)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('201 Created or 200', function(){ pm.expect([201,200]).to.include(pm.response.code); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"items\": [\n    {\n      \"course_id\": 1,\n      \"participants\": [\n        {\n          \"full_name\": \"Ali Rezaei\",\n          \"email\": \"ali@example.com\",\n          \"mobile\": \"+989120000001\"\n        }\n      ]\n    }\n  ],\n  \"discount_code\": \"OFF10\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/purchase/checkout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"purchase",
+								"checkout"
+							]
+						},
+						"description": "Creates paid order, returns {detail, order_id, total_amount} on success."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin Panel",
+			"item": [
+				{
+					"name": "List Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/users/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id"
+								}
+							]
+						},
+						"description": "Replace :id"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User (PUT)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"new@example.com\",\n  \"first_name\": \"New\",\n  \"last_name\": \"Name\",\n  \"is_active\": true,\n  \"groups\": [\n    {\n      \"name\": \"staff\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/users/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id"
+								}
+							]
+						},
+						"description": "Replace :id"
+					},
+					"response": []
+				},
+				{
+					"name": "List Groups",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/groups",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"groups"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Orders (filter by status)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/orders?status=paid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"orders"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "paid"
+								}
+							]
+						},
+						"description": "Filter with ?status=paid"
+					},
+					"response": []
+				},
+				{
+					"name": "Order Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/orders/:pk",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"orders",
+								":pk"
+							],
+							"variable": [
+								{
+									"key": "pk"
+								}
+							]
+						},
+						"description": "Replace :pk"
+					},
+					"response": []
+				},
+				{
+					"name": "List Tickets",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/tickets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"tickets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ticket Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/tickets/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"tickets",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id"
+								}
+							]
+						},
+						"description": "Replace :id"
+					},
+					"response": []
+				},
+				{
+					"name": "Reply to Ticket (admin/support)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"message\": \"پاسخ پشتیبان\",\n  \"status\": \"in_progress\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/tickets/:id/reply",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"tickets",
+								":id",
+								"reply"
+							],
+							"variable": [
+								{
+									"key": "id"
+								}
+							]
+						},
+						"description": "Replace :id"
+					},
+					"response": []
+				},
+				{
+					"name": "Discount Codes (list/create)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/discounts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"discounts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Discount Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/discounts/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"discounts",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id"
+								}
+							]
+						},
+						"description": "Replace :id"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Discount (PATCH)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"description\": \"Updated description\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/discounts/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"discounts",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id"
+								}
+							]
+						},
+						"description": "Replace :id"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Discount",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/discounts/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"discounts",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id"
+								}
+							]
+						},
+						"description": "Replace :id"
+					},
+					"response": []
+				},
+				{
+					"name": "Admin Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/stats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"stats"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "My Notifications",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/notifications",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"notifications"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mark Notification Read",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin-panel/notifications/:id/read",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin-panel",
+								"notifications",
+								":id",
+								"read"
+							],
+							"variable": [
+								{
+									"key": "id"
+								}
+							]
+						},
+						"description": "Replace :id"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		},
+		{
+			"key": "access_token",
+			"value": ""
+		},
+		{
+			"key": "refresh_token",
+			"value": ""
+		}
+	]
+}
