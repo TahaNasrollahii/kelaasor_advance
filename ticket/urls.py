@@ -5,7 +5,7 @@ from .views import (
     TicketReplyCreateAPIView
 )
 
-app_name = "support"
+app_name = "ticket"
 
 urlpatterns = [
     path('tickets/', TicketListCreateAPIView.as_view(), name='ticket-list-create'),

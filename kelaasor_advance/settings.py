@@ -158,6 +158,7 @@ CELERY_TIMEZONE = config('TIME_ZONE', default='Asia/Tehran')
 CELERY_ENABLE_UTC = True
 
 CELERY_BEAT_SCHEDULE = {
+
     'increase-online-course-price-daily': {
         'task': 'courses.tasks.increase_online_course_price_before_deadline',
         'schedule': crontab(hour=0, minute=0),  # هر روز ساعت 00:00

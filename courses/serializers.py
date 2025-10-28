@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Category, Instructor, Course, Chapter, Video, Attachment
 
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
