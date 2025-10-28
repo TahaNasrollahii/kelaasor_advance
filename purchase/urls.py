@@ -5,7 +5,7 @@ from .views import (
     ApplyDiscountCodeAPIView, DiscountCodeListAPIView,
 )
 
-app_name = "orders"
+app_name = "purchase"
 
 urlpatterns = [
     # سبد خرید کاربر
