@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'courses',
     'purchase',
     'ticket',
-    'admin_panel'
+    'admin_panel',
+    'user_panel'
 ]
 
 AUTH_USER_MODEL = 'users.User'
@@ -120,7 +121,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tehran'
 
 USE_I18N = True
 

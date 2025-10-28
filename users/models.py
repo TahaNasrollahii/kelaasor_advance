@@ -8,7 +8,7 @@ from django.utils import timezone
 
 PHONE_RE = RegexValidator(
     regex=r'^\+98\d{9}$',
-    message='Phone number must be entered in the format: +989XXXXXXXXX. Exactly 11 digits allowed.'
+    message='Phone number must be entered in the format: +989XXXXXXXXX. Exactly 12 digits allowed.'
 )
 
 
