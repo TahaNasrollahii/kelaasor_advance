@@ -1,9 +1,10 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from django.db.models import Q
-from .models import Ticket, TicketReply
-from .serializers import TicketSerializer, TicketReplySerializer
+from .models import Ticket, TicketMessage
+from .serializers import TicketSerializer, TicketMessageSerializer
 from .utils import send_ticket_reply_email, send_ticket_reply_sms
+
 
 class TicketListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = TicketSerializer
@@ -30,22 +31,22 @@ class TicketRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
 
 
 class TicketReplyCreateAPIView(generics.CreateAPIView):
-    serializer_class = TicketReplySerializer
+    serializer_class = TicketMessageSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         ticket_id = request.data.get('ticket')
-        content = request.data.get('content')
+        message = request.data.get('message')
 
         try:
             ticket = Ticket.objects.get(id=ticket_id)
         except Ticket.DoesNotExist:
             return Response({'detail': 'Ticket not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        reply = TicketReply.objects.create(
+        reply = TicketMessage.objects.create(
             ticket=ticket,
             sender=request.user,
-            content=content
+            message=message
         )
 
         #  TODO: اطلاع‌رسانی به کاربر صاحب تیکت
@@ -53,5 +54,5 @@ class TicketReplyCreateAPIView(generics.CreateAPIView):
             send_ticket_reply_email(ticket.user, ticket, reply)
             send_ticket_reply_sms(ticket.user, ticket, reply)
 
-        serializer = TicketReplySerializer(reply)
+        serializer = TicketMessageSerializer(reply)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
