@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import Ticket, TicketReply
+from .models import Ticket, TicketMessage
 
 
-class TicketReplyInline(admin.TabularInline):
-    model = TicketReply
+class TicketMessageInline(admin.TabularInline):
+    model = TicketMessage
     extra = 1
     readonly_fields = ['sender', 'created_at']
     can_delete = True
@@ -14,14 +14,14 @@ class TicketReplyInline(admin.TabularInline):
 class TicketAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'user', 'status', 'department', 'is_public', 'created_at', 'updated_at']
     list_filter = ['status', 'department', 'is_public', 'created_at']
-    search_fields = ['title', 'user__username', 'content']
+    search_fields = ['title', 'user__username', 'message']
     ordering = ['-created_at']
-    inlines = [TicketReplyInline]
+    inlines = [TicketMessageInline]
 
 
-@admin.register(TicketReply)
-class TicketReplyAdmin(admin.ModelAdmin):
+@admin.register(TicketMessage)
+class TicketMessageAdmin(admin.ModelAdmin):
     list_display = ['id', 'ticket', 'sender', 'created_at']
     list_filter = ['created_at']
-    search_fields = ['ticket__title', 'sender__username', 'content']
+    search_fields = ['ticket__title', 'sender__username', 'message']
     ordering = ['-created_at']

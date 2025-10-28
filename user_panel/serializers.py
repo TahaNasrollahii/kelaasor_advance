@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from purchase.models import OrderItem, Order
 from ticket.models import Ticket
-from ticket.serializers import TicketReplySerializer
+from ticket.serializers import TicketMessageSerializer
 from users.models import Announcement
 
 
@@ -20,7 +20,7 @@ class DashboardOrderSerializer(serializers.ModelSerializer):
         fields = ['id', 'total_amount', 'status', 'discount_code', 'created_at', 'items']
 
 class DashboardTicketSerializer(serializers.ModelSerializer):
-    replies = TicketReplySerializer(many=True, read_only=True)
+    replies = TicketMessageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Ticket
