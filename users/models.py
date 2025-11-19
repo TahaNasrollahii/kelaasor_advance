@@ -7,8 +7,8 @@ import random
 from django.utils import timezone
 
 PHONE_RE = RegexValidator(
-    regex=r'^\+98\d{9}$',
-    message='Phone number must be entered in the format: +989XXXXXXXXX. Exactly 12 digits allowed.'
+    regex=r'^\+?989\d{9}$',
+    message='Phone number must be: +989XXXXXXXXX or 989XXXXXXXXX'
 )
 
 
