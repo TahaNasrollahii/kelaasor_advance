@@ -1,4 +1,4 @@
-# 📘 Advance Kelaasor – Backend
+# 📘 Kelaasor_advance
 
 ### A Complete Django REST Framework Backend for Online Bootcamps & Learning Platform
 
@@ -335,3 +335,4 @@ This project is licensed under the **MIT License**.
 
 **Advance Kelaasor** is a product of the **Kelaasor** team.
 Backend Development: **Taha Nasrollahi**
+
