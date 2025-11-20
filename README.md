@@ -20,6 +20,7 @@ The project is fully built with **Django REST Framework**, **PostgreSQL**, and *
 
 ---
 
+
 # ✨ Key Features
 
 ## 🛒 Course Store
@@ -34,6 +35,7 @@ The project is fully built with **Django REST Framework**, **PostgreSQL**, and *
   * Images, videos, and attachments
 * Support for chapters and multiple videos per chapter (for offline courses)
 * Search, filter, and sort capabilities
+
 
 ## 👥 Users & Authentication
 
@@ -61,6 +63,7 @@ The project is fully built with **Django REST Framework**, **PostgreSQL**, and *
   * Payment history
   * Notifications & offers
   * Tickets and support messages
+
 
 ## 🎫 Ticketing System
 
@@ -110,6 +113,7 @@ The project is fully built with **Django REST Framework**, **PostgreSQL**, and *
 
 ---
 
+
 # 🧩 Tech Stack
 
 | Component      | Technology                     |
@@ -121,6 +125,7 @@ The project is fully built with **Django REST Framework**, **PostgreSQL**, and *
 | Docs/Testing   | Postman Collection             |
 
 ---
+
 
 # 📁 Project Structure (Simplified)
 
@@ -139,6 +144,7 @@ kelaasor_advance/
 ```
 
 ---
+
 
 # 🔐 Authentication Flow
 
@@ -159,6 +165,7 @@ Authorization: Bearer <access_token>
 ```
 
 ---
+
 
 # 📮 Postman Collection
 
@@ -189,6 +196,7 @@ Collection-level scripts automatically store JWT tokens after OTP verification o
 
 ---
 
+
 # ⚙️ Environment Setup
 
 Create a `.env` file in the project root:
@@ -216,6 +224,7 @@ DEFAULT_FROM_EMAIL=no-reply@kelaasor.com
 > For production, set `DEBUG=False`, configure a real SMTP backend, strict `ALLOWED_HOSTS`, and secure secrets via environment variables or a secret manager.
 
 ---
+
 
 # ▶️ Running the Project
 
@@ -313,6 +322,7 @@ GET /api/admin-panel/stats/
 
 ---
 
+
 # 🤝 Contributing
 
 Contributions, issues, and feature requests are welcome.
@@ -325,14 +335,15 @@ Please follow standard Django/DRF best practices and keep code well-documented.
 
 ---
 
+
 # 📜 License
 
 This project is licensed under the **MIT License**.
 
 ---
 
+
 # 🧡 Credits
 
 **Advance Kelaasor** is a product of the **Kelaasor** team.
 Backend Development: **Taha Nasrollahi**
-
