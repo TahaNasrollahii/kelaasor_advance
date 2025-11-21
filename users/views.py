@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
-from .services.otp_service import verify_otp, generate_otp
+from .services.otp_service import verify_otp, send_otp
 from .utils import issue_tokens_for_user
 from .serializers import (SendOTPSerializer, VerifyOTPSerializer, ForgotPasswordSendOTPSerializer,
                           ResetPasswordVerifySerializer, RegisterSerializer)
@@ -44,7 +44,7 @@ class SendOTPView(APIView):
         mobile = serializer.validated_data["mobile"]
 
         # تولید و ذخیره OTP در Redis
-        otp = generate_otp(mobile, purpose="login")
+        otp_code = send_otp(mobile, purpose="login")
 
         # TODO: send SMS via provider
         # send_sms(mobile, f"Your verification code is {otp}")
@@ -91,7 +91,7 @@ class ForgotPasswordSendOTPView(APIView):
 
         mobile = serializer.validated_data["mobile"]
 
-        otp = generate_otp(mobile, purpose="reset_password")
+        otp = send_otp(mobile, purpose="reset_password")
 
         # TODO: send SMS
         # send_sms(mobile, f"Your reset password code is {otp}")
