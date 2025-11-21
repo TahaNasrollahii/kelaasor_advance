@@ -144,7 +144,11 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
-    )
+    ),
+    "DEFAULT_THROTTLE_RATES": {
+        "otp": "5/min",
+        "otp_verify": "5/min",
+    }
 }
 
 SIMPLE_JWT = {

@@ -5,6 +5,7 @@ from rest_framework import status, permissions
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from .services.otp_service import verify_otp, send_otp
+from .throttles import OTPRateThrottle, OTPVerifyThrottle
 from .utils import issue_tokens_for_user
 from .serializers import (SendOTPSerializer, VerifyOTPSerializer, ForgotPasswordSendOTPSerializer,
                           ResetPasswordVerifySerializer, RegisterSerializer)
@@ -36,24 +37,21 @@ class RegisterView(APIView):
 
 class SendOTPView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [OTPRateThrottle]
 
     def post(self, request, *args, **kwargs):
         serializer = SendOTPSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         mobile = serializer.validated_data["mobile"]
+        code = send_otp(mobile, purpose="login")
 
-        # تولید و ذخیره OTP در Redis
-        otp_code = send_otp(mobile, purpose="login")
-
-        # TODO: send SMS via provider
-        # send_sms(mobile, f"Your verification code is {otp}")
-
-        return Response({"detail": "OTP sent successfully."}, status=status.HTTP_200_OK)
+        return Response({"detail": "OTP sent successfully."}, status=200)
 
 
 class VerifyOTPAPIView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [OTPVerifyThrottle]
 
     def post(self, request):
         ser = VerifyOTPSerializer(data=request.data)
@@ -79,11 +77,12 @@ class VerifyOTPAPIView(APIView):
                 "mobile": user.mobile,
                 "full_name": user.full_name,
             }
-        })
+        }, status=status.HTTP_200_OK)
     
 
 class ForgotPasswordSendOTPView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [OTPRateThrottle]
 
     def post(self, request, *args, **kwargs):
         serializer = ForgotPasswordSendOTPSerializer(data=request.data)
@@ -91,12 +90,15 @@ class ForgotPasswordSendOTPView(APIView):
 
         mobile = serializer.validated_data["mobile"]
 
-        otp = send_otp(mobile, purpose="reset_password")
+        otp_code = send_otp(mobile, purpose="reset_password")
 
-        # TODO: send SMS
-        # send_sms(mobile, f"Your reset password code is {otp}")
+        # TODO: send SMS via provider
+        # send_sms(mobile, f"Your reset password OTP is {otp_code}")
 
-        return Response({"detail": "Reset password OTP sent successfully."}, status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Reset password OTP sent successfully."},
+            status=status.HTTP_200_OK
+        )
 
 
 class ResetPasswordVerifyView(APIView):
