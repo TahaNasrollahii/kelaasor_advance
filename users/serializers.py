@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from django.utils import timezone
-from .models import User, OTP
+from rest_framework.exceptions import ValidationError
+from .models import User
 from django.contrib.auth.password_validation import validate_password
+from .services.otp_service import send_otp, verify_otp
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -26,36 +27,29 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         return user
 
-
 class SendOTPSerializer(serializers.Serializer):
     mobile = serializers.CharField(max_length=15)
 
-    def validate_mobile(self, value):
-        value = value.strip()
-        if not value.startswith('+'):
-            raise serializers.ValidationError("Phone number must include country code (e.g. +98...)")
-        return value
-
     def create(self, validated_data):
-        mobile = validated_data['mobile']
-
-        # جلوگیری از ارسال بیش از حد
-        recent_count = OTP.objects.filter(
-            mobile=mobile,
-            created_at__gte=timezone.now() - timezone.timedelta(minutes=10)
-        ).count()
-        if recent_count >= 5:
-            raise serializers.ValidationError("Too many OTP requests. Please try again later.")
-
-        otp = OTP.create_otp(mobile)
-        # TODO: send SMS via provider
-        # send_sms(mobile, f"Your verification code is {otp.code}")
-        return otp
-
+        mobile = validated_data["mobile"]
+        code = send_otp(mobile, purpose="login")
+        # send_sms(mobile, f"Your code is {code}")
+        return {"detail": "OTP sent"}
 
 class VerifyOTPSerializer(serializers.Serializer):
     mobile = serializers.CharField(max_length=20)
     code = serializers.CharField(max_length=6)
+
+    def validate_mobile(self, value):
+        value = value.strip()
+        if not value.startswith("+"):
+            raise serializers.ValidationError("Phone number must include country code (e.g. +98...)")
+        return value
+
+    def validate_code(self, value):
+        if not value.isdigit() or len(value) != 6:
+            raise serializers.ValidationError("Invalid OTP format.")
+        return value
 
 
 class ForgotPasswordSendOTPSerializer(serializers.Serializer):
@@ -71,10 +65,12 @@ class ForgotPasswordSendOTPSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         mobile = validated_data['mobile']
-        otp = OTP.create_otp(mobile, purpose='reset_password')
-        # TODO: send SMS via provider
-        # send_sms(mobile, f"Your reset password code is {otp.code}")
-        return otp
+        code = send_otp(mobile, purpose="reset_password")
+
+        # TODO: send SMS
+        # send_sms(mobile, f"Your reset password code is {code}")
+
+        return {"detail": "Reset OTP sent successfully."}
 
 
 class ResetPasswordVerifySerializer(serializers.Serializer):
@@ -83,30 +79,31 @@ class ResetPasswordVerifySerializer(serializers.Serializer):
     new_password = serializers.CharField(write_only=True, min_length=6)
 
     def validate(self, data):
-        mobile = data['mobile'].strip()
-        code = data['code'].strip()
+        mobile = data["mobile"].strip()
+        code   = data["code"].strip()
 
+        # Validate mobile
+        if not mobile.startswith("+"):
+            raise serializers.ValidationError("Phone number must include country code.")
+
+        # Validate OTP via Redis
         try:
-            otp = OTP.objects.filter(
-                mobile=mobile, code=code, is_used=False, purpose='reset_password'
-            ).latest('created_at')
-        except OTP.DoesNotExist:
-            raise serializers.ValidationError("Invalid or expired code.")
+            verify_otp(mobile, code, purpose="reset_password")
+        except ValidationError as e:
+            raise serializers.ValidationError(str(e))
 
-        if otp.is_expired:
-            raise serializers.ValidationError("Code expired. Please request a new one.")
+        # Check user existence
+        if not User.objects.filter(mobile=mobile).exists():
+            raise serializers.ValidationError("User not found.")
 
-        data['otp'] = otp
         return data
 
     def create(self, validated_data):
-        otp = validated_data['otp']
-        otp.mark_used()
+        mobile = validated_data["mobile"].strip()
+        new_pass = validated_data["new_password"]
 
-        user = User.objects.filter(mobile=otp.mobile).first()
-        if not user:
-            raise serializers.ValidationError("User not found.")
+        user = User.objects.get(mobile=mobile)
+        user.set_password(new_pass)
+        user.save(update_fields=["password"])
 
-        user.set_password(validated_data['new_password'])
-        user.save(update_fields=['password'])
         return user

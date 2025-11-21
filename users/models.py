@@ -91,68 +91,6 @@ class UserProfile(models.Model):
 
 
 
-class OTP(models.Model):
-    """
-    One Time Password (OTP) for phone verification / login.
-    - store hashed codes if you want extra security (here kept simple).
-    - expiry and used flags are important.
-    """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    mobile = models.CharField(max_length=15, validators=[PHONE_RE], db_index=True)
-    code = models.CharField(max_length=6)  # store as plain for simplicity; consider hashing in prod
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
-    is_used = models.BooleanField(default=False)
-    purpose = models.CharField(max_length=50, default='login')  # login, reset_pass, verify_mobile, ...
-    ip_address = models.CharField(max_length=45, blank=True, null=True)
-    attempts = models.PositiveIntegerField(default=0)
-    max_attempts = models.PositiveIntegerField(default=5)
-    locked_until = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        indexes = [
-            models.Index(fields=['mobile']),
-            models.Index(fields=['-created_at']),
-        ]
-
-    def mark_used(self):
-        self.is_used = True
-        self.save(update_fields=['is_used'])
-
-    @property
-    def is_expired(self):
-        return timezone.now() > self.expires_at
-
-    @staticmethod
-    def generate_code(length=6):
-        """Generate numeric OTP code as string."""
-        return ''.join(str(random.randint(0, 9)) for _ in range(length))
-
-    def can_attempt(self):
-        return not (self.locked_until and self.locked_until > timezone.now())
-
-    def register_failed_attempt(self):
-        self.attempts += 1
-        if self.attempts >= self.max_attempts:
-            self.locked_until = timezone.now() + timezone.timedelta(minutes=15)
-        self.save(update_fields=['attempts', 'locked_until'])
-
-    @classmethod
-    def create_otp(cls, mobile, ttl_seconds=300, purpose='login', ip_address=None):
-        """Convenience to create an OTP instance and return code (for sending)."""
-        code = cls.generate_code()
-        now = timezone.now()
-        otp = cls.objects.create(
-            mobile=mobile,
-            code=code,
-            created_at=now,
-            expires_at=now + timezone.timedelta(seconds=ttl_seconds),
-            purpose=purpose,
-            ip_address=ip_address
-        )
-        return otp
-
-
 class TeamEnrollment(models.Model):
     """
     A temporary container for group purchase members.
