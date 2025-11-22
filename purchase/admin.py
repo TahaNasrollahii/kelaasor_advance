@@ -1,6 +1,5 @@
 from django.contrib import admin
-from .models import Cart, Order, OrderItem, Participant, Payment, DiscountCode
-
+from .models import Order, OrderItem, Participant, Payment, DiscountCode
 
 
 class ParticipantInline(admin.TabularInline):
@@ -37,13 +36,6 @@ class PaymentAdmin(admin.ModelAdmin):
     list_filter = ['status', 'payment_date']
     search_fields = ['order__id', 'order__user__username', 'transaction_id']
     ordering = ['-payment_date']
-
-
-@admin.register(Cart)
-class CartAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'created_at', 'updated_at']
-    search_fields = ['user__username', 'user__full_name']
-    ordering = ['-updated_at']
 
 
 @admin.register(DiscountCode)

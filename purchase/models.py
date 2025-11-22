@@ -5,11 +5,6 @@ from courses.models import Course
 
 User = settings.AUTH_USER_MODEL
 
-class Cart(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
 
 class Order(models.Model):
     STATUS_CHOICES = [

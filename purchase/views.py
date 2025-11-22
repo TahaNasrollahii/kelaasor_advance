@@ -1,21 +1,24 @@
-from decimal import Decimal
-
 from django.db import transaction
 from django.db.models import F
-from django.utils import timezone
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from courses.models import Course
 from .serializers import (
-    CartSerializer, OrderSerializer,
-    PaymentSerializer, CartItemSerializer,
-    DiscountCodeSerializer,CheckoutSerializer
+    OrderSerializer, CartItemSerializer, DiscountCodeSerializer, CheckoutSerializer
 )
-from .models import (Cart, Order, OrderItem,
-                     Participant, Payment, DiscountCode, Enrollment)
-
+from .models import (Order, OrderItem, DiscountCode)
+from .services.checkout_service import (
+    get_pending_order,
+    attach_participants_to_order,
+    calculate_subtotal,
+    apply_discount,
+    finalize_order,
+    create_payment,
+    create_enrollments,
+)
 
 
 class CartDetailAPIView(APIView):
@@ -35,7 +38,6 @@ class CartDetailAPIView(APIView):
 
 class CartAddItemAPIView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = CartItemSerializer
 
     @transaction.atomic
     def post(self, request, *args, **kwargs):
@@ -58,111 +60,33 @@ class CartAddItemAPIView(generics.CreateAPIView):
 
 
 class CheckoutAPIView(APIView):
-    """
-    انجام Checkout نهایی:
-      - بررسی وجود سفارش pending برای کاربر
-      - محاسبه مبلغ
-      - اعمال کد تخفیف (در صورت وجود)
-      - تغییر وضعیت سفارش به paid
-      - ثبت پرداخت و enrollment
-    """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     @transaction.atomic
     def post(self, request):
-        user = request.user
+        serializer = CheckoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
 
-        # 1. پیدا کردن سفارش pending
-        order = (
-            Order.objects
-            .select_for_update()
-            .filter(user=user, status="pending")
-            .first()
-        )
-        if not order:
-            return Response({"detail": "سبد خرید خالی است"}, status=400)
+        order = get_pending_order(request.user)
+        items_payload = data["items"]
 
-        items = list(order.items.select_related("course"))
-        if not items:
-            return Response({"detail": "هیچ آیتمی در سبد وجود ندارد"}, status=400)
+        attach_participants_to_order(order, items_payload)
+        subtotal = calculate_subtotal(order)
 
-        # 2. محاسبه مجموع قبل از تخفیف
-        subtotal = sum(i.price * i.quantity for i in items)
-        subtotal = Decimal(subtotal)
+        discount_obj, discount_amount = apply_discount(order, subtotal, data.get("discount_code"))
+        total = finalize_order(order, subtotal, discount_obj, discount_amount)
 
-        discount_code = request.data.get("discount_code")
-        discount_amount = Decimal("0")
-        discount_obj = None
+        create_payment(order, total)
+        create_enrollments(order)
 
-        # 3. اعمال کد تخفیف
-        if discount_code:
-            discount_obj = DiscountCode.objects.select_for_update().filter(code__iexact=discount_code).first()
-            if not discount_obj:
-                return Response({"detail": "کد تخفیف معتبر نیست"}, status=400)
-
-            now = timezone.now()
-            if not discount_obj.is_active or not (
-                (discount_obj.active_from is None or now >= discount_obj.active_from)
-                and (discount_obj.active_until is None or now <= discount_obj.active_until)
-            ):
-                return Response({"detail": "کد تخفیف منقضی یا غیرفعال است"}, status=400)
-
-            # چک کاربر خاص
-            if discount_obj.user and discount_obj.user != user:
-                return Response({"detail": "کد تخفیف مخصوص کاربر دیگری است"}, status=403)
-
-            # چک دوره خاص
-            if discount_obj.course and not any(
-                it.course_id == discount_obj.course_id for it in items
-            ):
-                return Response({"detail": "کد تخفیف برای این دوره معتبر نیست"}, status=400)
-
-            # محاسبه مقدار تخفیف
-            if discount_obj.discount_type == "percent":
-                discount_amount = subtotal * Decimal(discount_obj.value) / Decimal("100")
-            else:
-                discount_amount = Decimal(discount_obj.value)
-
-            # محدودسازی
-            if discount_amount > subtotal:
-                discount_amount = subtotal
-
-            # افزایش شمارنده استفاده (اتمیک)
-            DiscountCode.objects.filter(pk=discount_obj.pk).update(
-                used_count=F("used_count") + 1
-            )
-
-        # 4. محاسبه مبلغ نهایی
-        total = subtotal - discount_amount
-        if total < 0:
-            total = Decimal("0")
-
-        # 5. ثبت تغییرات در Order
-        order.total_amount = total
-        order.status = "paid"
-        if hasattr(order, "discount_code") and discount_obj:
-            order.discount_code = discount_obj.code
-        if hasattr(order, "discount_amount"):
-            order.discount_amount = discount_amount
-        order.save()
-
-        # 6. ثبت پرداخت
-        Payment.objects.create(order=order, amount=total, status="paid")
-
-        # 7. ثبت نام کاربر در دوره‌ها
-        for item in items:
-            Enrollment.objects.get_or_create(user=user, course=item.course)
-
-        return Response(
-            {
-                "detail": "پرداخت با موفقیت انجام شد",
-                "order_id": str(order.id),
-                "subtotal": str(subtotal),
-                "discount_amount": str(discount_amount),
-                "total_amount": str(total),
-            },
-            status=status.HTTP_201_CREATED,
-        )
+        return Response({
+            "detail": "پرداخت موفق بود",
+            "order_id": order.id,
+            "subtotal": subtotal,
+            "discount_amount": discount_amount,
+            "total_amount": total,
+        })
 
 
 
@@ -201,94 +125,8 @@ class ApplyDiscountCodeAPIView(APIView):
         if not discount.can_use(request.user, course):
             return Response({'detail': 'کد تخفیف معتبر نیست یا شرایط استفاده را ندارد'}, status=400)
 
-        # افزایش اتمیک
-        DiscountCode.objects.filter(pk=discount.pk).update(used_count=F('used_count') + 1)
-
         return Response({
             'code': discount.code,
             'discount_type': discount.discount_type,
             'value': discount.value
         }, status=200)
-
-
-# class CheckoutAPIView(generics.GenericAPIView):
-#     serializer_class = CheckoutSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-#
-#     def post(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         items_data = serializer.validated_data['items']
-#         discount_code_str = serializer.validated_data.get('discount_code')
-#
-#         total_amount = 0
-#         discount_value = 0
-#         discount_type = None
-#
-#         # بررسی و اعمال کد تخفیف
-#         discount = None
-#         if discount_code_str:
-#             try:
-#                 discount = DiscountCode.objects.get(code=discount_code_str, is_active=True)
-#             except DiscountCode.DoesNotExist:
-#                 return Response({'detail': 'Invalid discount code'}, status=400)
-#
-#             now = timezone.now()
-#             if (discount.valid_from and discount.valid_from > now) or (discount.valid_to and discount.valid_to < now):
-#                 return Response({'detail': 'Code not valid at this time'}, status=400)
-#
-#             if discount.specific_user and discount.specific_user != request.user:
-#                 return Response({'detail': 'Code not valid for this user'}, status=400)
-#
-#         # ایجاد سفارش
-#         order = Order.objects.create(user=request.user, total_amount=0, status='pending')
-#
-#         for item_data in items_data:
-#             course_id = item_data['course_id']
-#             participants_data = item_data.get('participants', [])
-#
-#             course = Course.objects.get(id=course_id)
-#             price = course.price
-#
-#             # محاسبه کل مبلغ
-#             total_amount += price * len(participants_data)
-#
-#             order_item = OrderItem.objects.create(order=order, course=course, price=price,
-#                                                   quantity=len(participants_data))
-#
-#             # ایجاد participantها و enrollment
-#             for participant_data in participants_data:
-#                 participant = Participant.objects.create(order_item=order_item, **participant_data)
-#                 Enrollment.objects.create(
-#                     user=request.user,
-#                     course=course,
-#                     participant=participant,
-#                     access_expires_at=(
-#                                 timezone.now() + course.get_access_duration()) if course.course_type == 'offline' else None
-#                 )
-#
-#         # اعمال تخفیف
-#         if discount:
-#             discount_type = discount.discount_type
-#             if discount_type == 'percent':
-#                 discount_value = total_amount * (discount.value / 100)
-#             else:
-#                 discount_value = discount.value
-#             total_amount -= discount_value
-#             discount.used_count += 1
-#             discount.save()
-#             order.discount_code = discount.code
-#
-#         order.total_amount = total_amount
-#         # TODO: اتصال به درگاه پرداخت
-#         order.status = 'paid'  # فرض می‌کنیم پرداخت موفق است؛ بعداً می‌توان با درگاه واقعی ادغام کرد
-#         order.save()
-#
-#         # ثبت Payment
-#         Payment.objects.create(
-#             order=order,
-#             amount=total_amount,
-#             status='paid'
-#         )
-#
-#         return Response({'detail': 'Checkout successful', 'order_id': order.id, 'total_amount': total_amount})

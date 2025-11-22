@@ -15,7 +15,7 @@ def test_create_and_reply_ticket(api_client):
 
     payload = {
         "title": "مشکل ثبت‌نام",
-        "course": 1,          # اگر course=1 در DB نباشد، احتمالاً 400 می‌گیری
+        "course": 1,          # اگر course=1 در DB نباشد، احتمالاً 400 می‌گیریم
         "status": "open",
         "department": "support",
         "is_public": False
