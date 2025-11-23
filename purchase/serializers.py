@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Order, OrderItem, Participant, Enrollment, Payment, DiscountCode
+from .models import Order, OrderItem, Participant, Payment, DiscountCode
 
 
 class ParticipantSerializer(serializers.ModelSerializer):
@@ -31,7 +31,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     course_title = serializers.CharField(source='course.title', read_only=True)
 
     class Meta:
-        model = OrderItem  # هر آیتم سبد خرید مشابه OrderItem
+        model = OrderItem
         fields = ['id', 'course', 'course_title', 'price', 'quantity']
 
 

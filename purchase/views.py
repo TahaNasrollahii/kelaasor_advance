@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.db.models import F
+from django.utils import timezone
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -89,7 +89,6 @@ class CheckoutAPIView(APIView):
         })
 
 
-
 class UserOrdersAPIView(generics.ListAPIView):
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -104,7 +103,6 @@ class DiscountCodeListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         # فقط کدهای فعال
-        from django.utils import timezone
         now = timezone.now()
         return DiscountCode.objects.filter(is_active=True, active_from__lte=now, active_until__gte=now)
 

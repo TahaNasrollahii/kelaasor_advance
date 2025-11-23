@@ -1,7 +1,6 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from django.db.models import Q
-from admin_panel.permissions import IsAdminOrSupport
 from .models import Ticket, TicketMessage
 from .permissions import IsTicketOwnerOrSupport
 from .serializers import TicketSerializer, TicketMessageSerializer

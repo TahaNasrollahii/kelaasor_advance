@@ -54,7 +54,6 @@ class VideoDetailAPIView(generics.RetrieveAPIView):
     serializer_class = VideoSerializer
     permission_classes = [IsEnrolledOrVideoIsFree]
 
-    # override get_object to use course_slug + video_id
     def get_object(self):
         course_slug = self.kwargs.get("course_slug")
         video_id = self.kwargs.get("video_id")

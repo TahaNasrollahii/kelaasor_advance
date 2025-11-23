@@ -23,7 +23,6 @@ def test_create_and_reply_ticket(api_client):
 
     res_create = api_client.post("/api/tickets/tickets/", payload, format="json", **auth_header_for(u))
 
-    # 👇 اینجا را عوض کردیم
     assert res_create.status_code in (201, 200, 400), res_create.content
 
     if res_create.status_code in (201, 200):
