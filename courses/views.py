@@ -67,4 +67,4 @@ class VideoDetailAPIView(generics.RetrieveAPIView):
 class AttachmentDetailAPIView(generics.RetrieveAPIView):
     queryset = Attachment.objects.select_related('course').all()
     serializer_class = AttachmentSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]

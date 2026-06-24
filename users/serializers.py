@@ -59,8 +59,8 @@ class ForgotPasswordSendOTPSerializer(serializers.Serializer):
         value = value.strip()
         if not value.startswith('+'):
             raise serializers.ValidationError("Phone number must include country code (e.g. +98...)")
-        if not User.objects.filter(mobile=value).exists():
-            raise serializers.ValidationError("No account found with this mobile.")
+        if not User.objects.filter(mobile=value, is_active=True, deleted=False).exists():
+            raise serializers.ValidationError("If an account with this mobile exists, an OTP has been sent.")
         return value
 
     def create(self, validated_data):
@@ -76,7 +76,7 @@ class ForgotPasswordSendOTPSerializer(serializers.Serializer):
 class ResetPasswordVerifySerializer(serializers.Serializer):
     mobile = serializers.CharField(max_length=15)
     code = serializers.CharField(max_length=6)
-    new_password = serializers.CharField(write_only=True, min_length=6)
+    new_password = serializers.CharField(write_only=True, min_length=6, validators=[validate_password])
 
     def validate(self, data):
         mobile = data["mobile"].strip()
@@ -93,8 +93,8 @@ class ResetPasswordVerifySerializer(serializers.Serializer):
             raise serializers.ValidationError(str(e))
 
         # Check user existence
-        if not User.objects.filter(mobile=mobile).exists():
-            raise serializers.ValidationError("User not found.")
+        if not User.objects.filter(mobile=mobile, is_active=True, deleted=False).exists():
+            raise serializers.ValidationError("Invalid credentials.")
 
         return data
 

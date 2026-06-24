@@ -1,3 +1,4 @@
+import logging
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -11,6 +12,7 @@ from .serializers import (SendOTPSerializer, VerifyOTPSerializer, ForgotPassword
                           ResetPasswordVerifySerializer, RegisterSerializer)
 
 
+logger = logging.getLogger('users')
 User = get_user_model()
 
 
@@ -21,6 +23,7 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        logger.info("New user registered: %s", user.mobile)
 
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -45,6 +48,7 @@ class SendOTPView(APIView):
 
         mobile = serializer.validated_data["mobile"]
         code = send_otp(mobile, purpose="login")
+        logger.info("OTP sent for login: %s", mobile)
 
         return Response({"detail": "OTP sent successfully."}, status=200)
 
@@ -63,11 +67,15 @@ class VerifyOTPAPIView(APIView):
         try:
             verify_otp(mobile, code, purpose="login")
         except ValidationError as e:
+            logger.warning("OTP verification failed for %s: %s", mobile, str(e))
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        # ساخت/ورود کاربر
-        user, _ = User.objects.get_or_create(mobile=mobile)
+        user, created = User.objects.get_or_create(mobile=mobile)
+        if user.deleted or not user.is_active:
+            logger.warning("Login attempt on deactivated account: %s", mobile)
+            return Response({"detail": "This account has been deactivated."}, status=status.HTTP_403_FORBIDDEN)
         tokens = issue_tokens_for_user(user)
+        logger.info("User logged in via OTP: %s (created=%s)", mobile, created)
 
         return Response({
             "access": tokens["access"],
@@ -91,9 +99,7 @@ class ForgotPasswordSendOTPView(APIView):
         mobile = serializer.validated_data["mobile"]
 
         otp_code = send_otp(mobile, purpose="reset_password")
-
-        # TODO: send SMS via provider
-        # send_sms(mobile, f"Your reset password OTP is {otp_code}")
+        logger.info("Password reset OTP sent for: %s", mobile)
 
         return Response(
             {"detail": "Reset password OTP sent successfully."},
@@ -103,9 +109,11 @@ class ForgotPasswordSendOTPView(APIView):
 
 class ResetPasswordVerifyView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [OTPVerifyThrottle]
 
     def post(self, request, *args, **kwargs):
         serializer = ResetPasswordVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        logger.info("Password reset completed for: %s", request.data.get('mobile', 'unknown'))
         return Response({"detail": "Password has been reset successfully."}, status=status.HTTP_200_OK)

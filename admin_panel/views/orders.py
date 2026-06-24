@@ -6,8 +6,8 @@ from admin_panel.permissions import IsAdminOrSupport
 
 class AdminOrderListAPIView(generics.ListAPIView):
     """
-    لیست تمام سفارش‌ها برای ادمین و بخش مالی
-    قابلیت فیلتر براساس وضعیت پرداخت و جستجو بر اساس نام کاربر
+    List all orders for admin and finance.
+    Filterable by payment status and searchable by user name.
     """
     serializer_class = OrderListSerializer
     permission_classes = [IsAdminOrSupport]
@@ -25,9 +25,7 @@ class AdminOrderListAPIView(generics.ListAPIView):
 
 
 class AdminOrderDetailAPIView(generics.RetrieveAPIView):
-    """
-    مشاهده جزئیات یک سفارش خاص
-    """
+    """Retrieve details of a specific order."""
     queryset = Order.objects.all().select_related('user').prefetch_related('items__course')
     serializer_class = OrderDetailSerializer
     permission_classes = [IsAdminOrSupport]

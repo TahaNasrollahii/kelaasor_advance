@@ -44,7 +44,7 @@ class PaymentSerializer(serializers.ModelSerializer):
 class DiscountCodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = DiscountCode
-        fields = '__all__'
+        fields = ['id', 'code', 'description', 'discount_type', 'value', 'active_from', 'active_until', 'is_active']
 
 class ParticipantInputSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=255)
@@ -58,7 +58,7 @@ class CheckoutItemSerializer(serializers.Serializer):
 
     def validate_participants(self, value):
         if not value:
-            raise serializers.ValidationError("هر دوره باید حداقل یک شرکت‌کننده داشته باشد")
+            raise serializers.ValidationError("Each course must have at least one participant")
         return value
 
 class CheckoutSerializer(serializers.Serializer):
@@ -67,5 +67,5 @@ class CheckoutSerializer(serializers.Serializer):
 
     def validate_items(self, value):
         if not value:
-            raise serializers.ValidationError("سبد خرید خالی است")
+            raise serializers.ValidationError("Cart is empty")
         return value

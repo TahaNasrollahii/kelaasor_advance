@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import User, UserProfile, OTP, TeamEnrollment, TeamMember
+from .models import User, UserProfile, TeamEnrollment, TeamMember
 
 
 # ---------- User ----------
@@ -13,9 +13,9 @@ class UserAdmin(admin.ModelAdmin):
     readonly_fields = ("date_joined", "last_login")
 
     fieldsets = (
-        ("اطلاعات کاربری", {"fields": ("mobile", "full_name", "email")}),
-        ("دسترسی‌ها", {"fields": ("is_active", "is_staff", "is_superuser", "groups")}),
-        ("زمان‌ها", {"fields": ("date_joined", "last_login")}),
+        ("User Information", {"fields": ("mobile", "full_name", "email")}),
+        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser", "groups")}),
+        ("Timestamps", {"fields": ("date_joined", "last_login")}),
     )
 
 # ---------- UserProfile ----------
@@ -26,20 +26,6 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_filter = ("city",)
     autocomplete_fields = ["user"]
 
-# ---------- OTP ----------
-@admin.register(OTP)
-class OTPAdmin(admin.ModelAdmin):
-    list_display = ("mobile", "code", "is_used", "is_expired_display", "created_at")
-    search_fields = ("mobile", "code")
-    list_filter = ("is_used",)
-    ordering = ("-created_at",)
-    readonly_fields = ("mobile", "code", "created_at")
-
-    def is_expired_display(self, obj):
-        color = "red" if obj.is_expired else "green"
-        text = "Expired" if obj.is_expired else "Valid"
-        return format_html(f'<b style="color:{color}">{text}</b>')
-    is_expired_display.short_description = "Expiration Status"
 
 # ---------- TeamEnrollment ----------
 @admin.register(TeamEnrollment)

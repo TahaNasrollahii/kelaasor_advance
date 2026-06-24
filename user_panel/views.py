@@ -14,15 +14,12 @@ class DashboardAPIView(generics.GenericAPIView):
     def get(self, request):
         user = request.user
 
-        # سفارش‌ها
-        orders = Order.objects.filter(user=user).order_by('-created_at')
+        orders = Order.objects.filter(user=user).prefetch_related('items__course', 'items__participants').order_by('-created_at')
         orders_data = DashboardOrderSerializer(orders, many=True).data
 
-        # تیکت‌ها
-        tickets = Ticket.objects.filter(user=user).order_by('-created_at')
+        tickets = Ticket.objects.filter(user=user).prefetch_related('messages__sender').order_by('-created_at')
         tickets_data = DashboardTicketSerializer(tickets, many=True).data
 
-        # اعلان‌ها
         announcements = Announcement.objects.filter(is_active=True).order_by('-start_date')
         announcements_data = DashboardAnnouncementSerializer(announcements, many=True).data
 

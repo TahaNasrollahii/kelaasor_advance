@@ -13,7 +13,7 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(Instructor)
 class InstructorAdmin(admin.ModelAdmin):
     list_display = ['user', 'bio', 'expertise']
-    search_fields = ['user__username', 'user__full_name', 'expertise']
+    search_fields = ['user__mobile', 'user__full_name', 'expertise']
     ordering = ['user']
 
 
@@ -21,7 +21,7 @@ class VideoInline(admin.TabularInline):
     model = Video
     extra = 1
     fields = ['title', 'video_file', 'order', 'duration', 'is_free']
-    readonly_fields = ['duration']  # duration می‌تونه auto محاسبه شود
+    readonly_fields = ['duration']
 
 
 class AttachmentInline(admin.TabularInline):
@@ -34,7 +34,7 @@ class ChapterInline(admin.TabularInline):
     model = Chapter
     extra = 1
     fields = ['title', 'order']
-    inlines = [VideoInline]  # قابل استفاده نیست، باید جدا مدیریت بشه
+    inlines = [VideoInline]
 
 
 @admin.register(Chapter)
@@ -69,4 +69,4 @@ class CourseAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('title',)}
     ordering = ['start_date']
     inlines = [ChapterInline, AttachmentInline]
-    filter_horizontal = ['instructors']  # اگر ManyToMany
+    filter_horizontal = ['instructors']

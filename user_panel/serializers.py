@@ -20,11 +20,11 @@ class DashboardOrderSerializer(serializers.ModelSerializer):
         fields = ['id', 'total_amount', 'status', 'discount_code', 'created_at', 'items']
 
 class DashboardTicketSerializer(serializers.ModelSerializer):
-    replies = TicketMessageSerializer(many=True, read_only=True)
+    messages = TicketMessageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Ticket
-        fields = ['id', 'title', 'status', 'department', 'created_at', 'updated_at', 'replies']
+        fields = ['id', 'title', 'status', 'department', 'created_at', 'updated_at', 'messages']
 
 class DashboardAnnouncementSerializer(serializers.ModelSerializer):
     class Meta:

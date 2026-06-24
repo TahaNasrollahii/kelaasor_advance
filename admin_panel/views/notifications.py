@@ -5,9 +5,7 @@ from admin_panel.permissions import IsAdminOrSupport
 
 
 class NotificationListAPIView(generics.ListAPIView):
-    """
-    نمایش تمام اعلان‌ها برای کاربر جاری (admin یا support)
-    """
+    """List all notifications for the current user (admin or support)."""
     serializer_class = NotificationSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdminOrSupport]
 
@@ -16,13 +14,13 @@ class NotificationListAPIView(generics.ListAPIView):
 
 
 class NotificationMarkReadAPIView(generics.UpdateAPIView):
-    """
-    علامت‌گذاری اعلان به عنوان خوانده شده
-    """
+    """Mark a notification as read."""
     serializer_class = NotificationSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdminOrSupport]
-    queryset = Notification.objects.all()
     lookup_field = 'id'
+
+    def get_queryset(self):
+        return Notification.objects.filter(recipient=self.request.user)
 
     def perform_update(self, serializer):
         serializer.save(is_read=True)

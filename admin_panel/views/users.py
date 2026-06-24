@@ -8,25 +8,28 @@ User = get_user_model()
 
 
 class UserListAPIView(generics.ListAPIView):
-    """نمایش لیست کاربران با قابلیت جستجو"""
+    """List users with search capability."""
     queryset = User.objects.all().order_by("-date_joined")
     serializer_class = UserListSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdmin]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["username", "email", "first_name", "last_name"]
-    ordering_fields = ["date_joined", "username"]
+    search_fields = ["mobile", "email", "full_name"]
+    ordering_fields = ["date_joined", "mobile"]
 
 
 class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    """مشاهده جزئیات، ویرایش و حذف کاربر"""
+    """View, edit, and soft-delete user details."""
     queryset = User.objects.all()
     serializer_class = UserDetailSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdmin]
     lookup_field = "id"
 
+    def perform_destroy(self, instance):
+        instance.soft_delete()
+
 
 class GroupListAPIView(generics.ListAPIView):
-    """نمایش گروه‌ها برای اختصاص نقش‌ها"""
+    """List groups for role assignment."""
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdmin]

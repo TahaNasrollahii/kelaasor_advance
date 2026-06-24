@@ -1,0 +1,54 @@
+# Version control
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Python
+__pycache__
+*.py[cod]
+*.egg-info
+dist
+build
+.eggs
+
+# Virtual environments
+env
+venv
+.venv
+
+# Environment files (secrets)
+.env
+.env.local
+.env.production
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+media
+staticfiles
+logs
+*.log
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov
+
+# Documentation
+*.md
+*.pdf
+
+# Docker
+docker-compose.override.yml
+
+# Migrations (build from scratch in production)
+**/migrations/
+
+# OS
+.DS_Store
+Thumbs.db

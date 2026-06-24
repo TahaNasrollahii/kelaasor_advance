@@ -5,7 +5,7 @@ from purchase.models import DiscountCode
 
 
 class DiscountCodeListAPIView(generics.ListCreateAPIView):
-    """لیست و ایجاد کدهای تخفیف"""
+    """List and create discount codes."""
     serializer_class = DiscountCodeSerializer
     permission_classes = [IsAdminOrProductManager]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
@@ -22,7 +22,7 @@ class DiscountCodeListAPIView(generics.ListCreateAPIView):
 
 
 class DiscountCodeDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    """مشاهده، ویرایش و حذف کد تخفیف"""
+    """View, update, and delete a discount code."""
     queryset = DiscountCode.objects.all()
     serializer_class = DiscountCodeSerializer
     permission_classes = [IsAdminOrProductManager]

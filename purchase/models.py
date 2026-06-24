@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.db.models import F
 from courses.models import Course
 
 
@@ -25,7 +26,7 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    quantity = models.PositiveIntegerField(default=1)  # همیشه 1 برای هر کاربر
+    quantity = models.PositiveIntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -41,7 +42,7 @@ class Enrollment(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
     participant = models.ForeignKey(Participant, on_delete=models.SET_NULL, blank=True, null=True)
     enrolled_at = models.DateTimeField(auto_now_add=True)
-    access_expires_at = models.DateTimeField(blank=True, null=True)  #محدودیت دسترسی برای دوره های آنلاین
+    access_expires_at = models.DateTimeField(blank=True, null=True)
 
 
 class Payment(models.Model):
@@ -54,8 +55,8 @@ class Payment(models.Model):
 
 class DiscountCode(models.Model):
     CODE_TYPE_CHOICES = [
-        ('percent', 'درصدی'),
-        ('fixed', 'مقدار ریالی'),
+        ('percent', 'Percent'),
+        ('fixed', 'Fixed Amount'),
     ]
 
     code = models.CharField(max_length=50, unique=True)
@@ -64,10 +65,10 @@ class DiscountCode(models.Model):
     value = models.DecimalField(max_digits=10, decimal_places=2)
     active_from = models.DateTimeField()
     active_until = models.DateTimeField()
-    max_usage = models.PositiveIntegerField(null=True, blank=True, help_text='حداکثر تعداد استفاده کد')
+    max_usage = models.PositiveIntegerField(null=True, blank=True, help_text='Maximum number of times this code can be used')
     used_count = models.PositiveIntegerField(default=0)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, help_text='اختصاصی به کاربر')
-    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True, help_text='اختصاصی به دوره')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, help_text='Restricted to a specific user')
+    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True, help_text='Restricted to a specific course')
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -89,5 +90,4 @@ class DiscountCode(models.Model):
         return True
 
     def increment_usage(self):
-        self.used_count += 1
-        self.save()
+        DiscountCode.objects.filter(pk=self.pk).update(used_count=F('used_count') + 1)

@@ -19,4 +19,4 @@ class IsEnrolledOrVideoIsFree(permissions.BasePermission):
 
         # check Enrollment
         course = obj.chapter.course
-        return Enrollment.objects.filter(user=user, course=course, is_active=True).exists()
+        return Enrollment.objects.filter(user=user, course=course).exists()

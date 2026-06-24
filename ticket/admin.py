@@ -14,7 +14,7 @@ class TicketMessageInline(admin.TabularInline):
 class TicketAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'user', 'status', 'department', 'is_public', 'created_at', 'updated_at']
     list_filter = ['status', 'department', 'is_public', 'created_at']
-    search_fields = ['title', 'user__username', 'message']
+    search_fields = ['title', 'user__mobile', 'message']
     ordering = ['-created_at']
     inlines = [TicketMessageInline]
 
@@ -23,5 +23,5 @@ class TicketAdmin(admin.ModelAdmin):
 class TicketMessageAdmin(admin.ModelAdmin):
     list_display = ['id', 'ticket', 'sender', 'created_at']
     list_filter = ['created_at']
-    search_fields = ['ticket__title', 'sender__username', 'message']
+    search_fields = ['ticket__title', 'sender__mobile', 'message']
     ordering = ['-created_at']

@@ -13,18 +13,17 @@ class OrderItemInline(admin.TabularInline):
     extra = 1
     fields = ['course', 'price', 'quantity']
     readonly_fields = ['price']
-    show_change_link = True  # برای دسترسی سریع به participantها
+    show_change_link = True
 
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'total_amount', 'status', 'discount_code', 'created_at']
     list_filter = ['status', 'created_at']
-    search_fields = ['user__username', 'user__full_name', 'items__course__title']
+    search_fields = ['user__mobile', 'user__full_name', 'items__course__title']
     ordering = ['-created_at']
     inlines = [OrderItemInline]
 
-    # نمایش تعداد participantها در لیست
     def participant_count(self, obj):
         return sum([item.participants.count() for item in obj.items.all()])
     participant_count.short_description = 'Participants'
@@ -34,7 +33,7 @@ class OrderAdmin(admin.ModelAdmin):
 class PaymentAdmin(admin.ModelAdmin):
     list_display = ['id', 'order', 'amount', 'status', 'payment_date', 'transaction_id']
     list_filter = ['status', 'payment_date']
-    search_fields = ['order__id', 'order__user__username', 'transaction_id']
+    search_fields = ['order__id', 'order__user__mobile', 'transaction_id']
     ordering = ['-payment_date']
 
 
@@ -42,5 +41,5 @@ class PaymentAdmin(admin.ModelAdmin):
 class DiscountCodeAdmin(admin.ModelAdmin):
     list_display = ['code', 'discount_type', 'value', 'user', 'course', 'is_active', 'active_from', 'active_until', 'used_count', 'max_usage']
     list_filter = ['discount_type', 'is_active', 'active_from', 'active_until']
-    search_fields = ['code', 'user__username', 'course__title']
+    search_fields = ['code', 'user__mobile', 'course__title']
     ordering = ['-active_from']

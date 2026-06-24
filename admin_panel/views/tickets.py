@@ -11,12 +11,12 @@ from admin_panel.serializers.tickets import (
 
 
 class AdminTicketListAPIView(generics.ListAPIView):
-    """لیست تمام تیکت‌های کاربران"""
+    """List all user tickets with optional status filter."""
     serializer_class = TicketListSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdminOrSupport]
 
     def get_queryset(self):
-        queryset = Ticket.objects.all().select_related("user").order_by("-updated_at")
+        queryset = Ticket.objects.all().select_related("user").prefetch_related("messages").order_by("-updated_at")
         status_filter = self.request.query_params.get("status")
         if status_filter:
             queryset = queryset.filter(status=status_filter)
@@ -24,7 +24,7 @@ class AdminTicketListAPIView(generics.ListAPIView):
 
 
 class AdminTicketDetailAPIView(generics.RetrieveAPIView):
-    """جزئیات تیکت شامل پیام‌ها"""
+    """Retrieve ticket details including messages."""
     queryset = Ticket.objects.all().select_related("user").prefetch_related("messages__sender")
     serializer_class = TicketDetailSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdminOrSupport]
@@ -32,7 +32,7 @@ class AdminTicketDetailAPIView(generics.RetrieveAPIView):
 
 
 class TicketReplyAPIView(generics.GenericAPIView):
-    """ارسال پاسخ توسط پشتیبان"""
+    """Post a reply to a ticket as support staff."""
     serializer_class = TicketReplySerializer
     permission_classes = [permissions.IsAuthenticated, IsAdminOrSupport]
     queryset = Ticket.objects.all()
@@ -53,7 +53,6 @@ class TicketReplyAPIView(generics.GenericAPIView):
 
         if new_status:
             ticket.status = new_status
-        ticket.updated_at = timezone.now()
         ticket.save()
 
-        return Response({"detail": "پاسخ ثبت شد"}, status=status.HTTP_201_CREATED)
+        return Response({"detail": "Reply posted successfully"}, status=status.HTTP_201_CREATED)

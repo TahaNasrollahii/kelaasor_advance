@@ -1,5 +1,6 @@
 import json
 import random
+import hmac
 import redis
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -36,11 +37,13 @@ def verify_otp(mobile, code, purpose="login"):
     if not data:
         raise ValidationError("OTP expired or not found.")
 
-    otp = json.loads(data)
+    try:
+        otp = json.loads(data)
+    except (json.JSONDecodeError, TypeError):
+        raise ValidationError("OTP data is corrupted.")
 
-    if otp["code"] != code:
+    if not hmac.compare_digest(str(otp.get("code", "")), str(code)):
         raise ValidationError("Invalid OTP code.")
 
-    # موفقیت → حذف
     redis_client.delete(key)
     return True

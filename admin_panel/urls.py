@@ -10,6 +10,7 @@ from admin_panel.views.tickets import (
     TicketReplyAPIView
 )
 
+app_name = "admin_panel"
 
 urlpatterns = [
     # Users & Groups
@@ -27,8 +28,8 @@ urlpatterns = [
     path('tickets/<int:id>/reply/', TicketReplyAPIView.as_view(), name='ticket-reply'),
 
     # Discounts
-    path('discounts/', DiscountCodeListAPIView.as_view(), name='discount-list'),
-    path('discounts/<int:id>/', DiscountCodeDetailAPIView.as_view(), name='discount-detail'),
+    path('discounts/', DiscountCodeListAPIView.as_view(), name='admin-discount-list'),
+    path('discounts/<int:id>/', DiscountCodeDetailAPIView.as_view(), name='admin-discount-detail'),
 
     # Stats
     path('stats/', AdminStatsAPIView.as_view(), name='admin-stats'),

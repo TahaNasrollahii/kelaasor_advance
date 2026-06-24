@@ -27,7 +27,7 @@ class CartDetailAPIView(APIView):
         pending = Order.objects.filter(user=request.user, status='pending').first()
         if not pending:
             return Response({'items': [], 'total': 0})
-        items = OrderItem.objects.filter(order=pending)
+        items = OrderItem.objects.filter(order=pending).select_related('course')
         total = sum(i.price * i.quantity for i in items)
         return Response({
             'order_id': pending.id,
@@ -44,7 +44,6 @@ class CartAddItemAPIView(generics.CreateAPIView):
         course_id = request.data.get('course')
         course = get_object_or_404(Course, id=course_id)
 
-        # قبلاً خریده؟
         if OrderItem.objects.filter(order__user=request.user, course=course, order__status='paid').exists():
             return Response({'detail': 'Course already purchased'}, status=400)
 
@@ -81,7 +80,7 @@ class CheckoutAPIView(APIView):
         create_enrollments(order)
 
         return Response({
-            "detail": "پرداخت موفق بود",
+            "detail": "Payment successful",
             "order_id": order.id,
             "subtotal": subtotal,
             "discount_amount": discount_amount,
@@ -94,7 +93,7 @@ class UserOrdersAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user).order_by('-created_at')
+        return Order.objects.filter(user=self.request.user).prefetch_related('items__participants', 'items__course').order_by('-created_at')
 
 
 class DiscountCodeListAPIView(generics.ListAPIView):
@@ -102,7 +101,6 @@ class DiscountCodeListAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # فقط کدهای فعال
         now = timezone.now()
         return DiscountCode.objects.filter(is_active=True, active_from__lte=now, active_until__gte=now)
 
@@ -115,13 +113,13 @@ class ApplyDiscountCodeAPIView(APIView):
         code_str = request.data.get('code')
         course_id = request.data.get('course_id')
         if not code_str or not course_id:
-            return Response({'detail': 'code و course_id الزامی هستند'}, status=400)
+            return Response({'detail': 'code and course_id are required'}, status=400)
 
         discount = get_object_or_404(DiscountCode, code=code_str)
         course = get_object_or_404(Course, id=course_id)
 
         if not discount.can_use(request.user, course):
-            return Response({'detail': 'کد تخفیف معتبر نیست یا شرایط استفاده را ندارد'}, status=400)
+            return Response({'detail': 'Discount code is invalid or does not meet usage conditions'}, status=400)
 
         return Response({
             'code': discount.code,

@@ -24,8 +24,8 @@ class Instructor(models.Model):
 
 class Course(models.Model):
     COURSE_TYPE_CHOICES = [
-        ("online", "آنلاین"),
-        ("offline", "آفلاین"),
+        ("online", "Online"),
+        ("offline", "Offline"),
     ]
 
     title = models.CharField(max_length=200)
@@ -37,22 +37,19 @@ class Course(models.Model):
 
     course_type = models.CharField(max_length=10, choices=COURSE_TYPE_CHOICES)
 
-    # مشخصات عمومی
     price = models.DecimalField(max_digits=10, decimal_places=2)
     is_active = models.BooleanField(default=True)
 
-    # فقط برای دوره‌های آنلاین
     start_date = models.DateTimeField(null=True, blank=True)
     registration_deadline = models.DateTimeField(null=True, blank=True)
 
-    # فقط برای دوره‌های آفلاین
-    access_duration_days = models.PositiveIntegerField(null=True, blank=True, help_text="مدت دسترسی بعد از خرید (روز)")
+    access_duration_days = models.PositiveIntegerField(null=True, blank=True, help_text="Access duration after purchase (days)")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def is_registration_open(self):
-        """بررسی باز بودن ثبت‌نام برای دوره‌های آنلاین"""
+        """Check if registration is open for online courses."""
         if self.course_type == "online":
             now = timezone.now()
             return self.registration_deadline and now <= self.registration_deadline
@@ -78,7 +75,7 @@ class Video(models.Model):
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='videos')
     title = models.CharField(max_length=200)
     video_file = models.FileField(upload_to='courses/videos/')
-    duration = models.PositiveIntegerField(help_text="مدت ویدیو به دقیقه")
+    duration = models.PositiveIntegerField(help_text="Video duration in minutes")
     order = models.PositiveIntegerField(default=0)
     is_free = models.BooleanField(default=False)
 

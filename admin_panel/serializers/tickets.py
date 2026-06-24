@@ -6,21 +6,21 @@ User = get_user_model()
 
 
 class TicketMessageSerializer(serializers.ModelSerializer):
-    sender_username = serializers.CharField(source="sender.username", read_only=True)
+    sender_mobile = serializers.CharField(source="sender.mobile", read_only=True)
 
     class Meta:
         model = TicketMessage
-        fields = ["id", "sender", "sender_username", "message", "created_at"]
+        fields = ["id", "sender", "sender_mobile", "message", "created_at"]
         read_only_fields = ["id", "sender", "created_at"]
 
 
 class TicketListSerializer(serializers.ModelSerializer):
-    user_username = serializers.CharField(source="user.username", read_only=True)
+    user_mobile = serializers.CharField(source="user.mobile", read_only=True)
     last_message = serializers.SerializerMethodField()
 
     class Meta:
         model = Ticket
-        fields = ["id", "user_username", "subject", "status", "created_at", "updated_at", "last_message"]
+        fields = ["id", "user_mobile", "title", "status", "created_at", "updated_at", "last_message"]
 
     def get_last_message(self, obj):
         last_msg = obj.messages.order_by("-created_at").first()
@@ -28,7 +28,7 @@ class TicketListSerializer(serializers.ModelSerializer):
 
 
 class TicketDetailSerializer(serializers.ModelSerializer):
-    user_username = serializers.CharField(source="user.username", read_only=True)
+    user_mobile = serializers.CharField(source="user.mobile", read_only=True)
     messages = TicketMessageSerializer(many=True, read_only=True)
 
     class Meta:
@@ -36,7 +36,7 @@ class TicketDetailSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "user",
-            "user_username",
+            "user_mobile",
             "title",
             "department",
             "status",

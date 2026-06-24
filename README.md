@@ -1,351 +1,287 @@
-# 📘 Kelaasor_advance
+# Advance Kelaasor API
 
-### A Complete Django REST Framework Backend for Online Bootcamps & Learning Platform
+A production-grade Django REST Framework backend for an online learning platform (bootcamps, online/offline courses). Built as part of the Kelaasor ecosystem.
 
----
+## Tech Stack
 
-## 🚀 Overview
+| Component | Technology |
+|-----------|-----------|
+| Framework | Django 5.2.7 |
+| API Toolkit | Django REST Framework 3.16.1 |
+| Authentication | SimpleJWT (OTP + Password-based JWT) |
+| Task Queue | Celery 5.5.3 |
+| Message Broker | Redis 7.1.0 |
+| Database | PostgreSQL (psycopg2-binary 2.9.11) |
+| Containerization | Docker + Docker Compose |
+| Testing | pytest + pytest-django |
 
-**Advance Kelaasor** is the backend system powering an online learning platform designed for hosting specialized bootcamps, online courses, and offline video courses.
-This platform is part of the **Kelaasor ecosystem** and provides a robust infrastructure for:
+## Architecture
 
-* Managing courses (online/offline)
-* User authentication via OTP
-* Shopping cart & checkout
-* Group purchases
-* Ticketing & user support
-* Admin dashboard for managing users, courses, discounts, and more
+```
+┌─────────────────────────────────────────────────────┐
+│                    CLIENT (Mobile/Web)              │
+│              Authorization: Bearer <JWT>            │
+└──────────────────────┬──────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────┐
+│              Django REST Framework                   │
+│    Authentication · Permissions · Throttling         │
+└──────┬───────────────┬──────────────┬───────────────┘
+       │               │              │
+┌──────▼──────┐ ┌──────▼──────┐ ┌────▼──────────────┐
+│   Serializers│ │   Services  │ │Custom Permissions  │
+│  (input/     │ │ (OTP,       │ │(7 classes +        │
+│   output)    │ │  checkout)  │ │ 6 admin RBAC)      │
+└──────┬──────┘ └──────┬──────┘ └───────────────────┘
+       │               │
+┌──────▼──────┐ ┌──────▼──────┐
+│   Models    │ │   Redis     │
+│  (23 total) │ │  (OTP codes)│
+└──────┬──────┘ └─────────────┘
+       │
+┌──────▼──────────────────────────┐
+│  PostgreSQL Database            │
+│  6 apps, 23 models             │
+└─────────────────────────────────┘
 
-The project is fully built with **Django REST Framework**, **PostgreSQL**, and **Simple JWT**, and includes a complete Postman collection for testing.
+Background:
+┌──────────────┐    ┌──────────────┐
+│ Celery Beat  │───▶│ Celery Worker │
+│ (price task) │    │ (autodiscover)│
+└──────────────┘    └───────┬──────┘
+                            │
+                    ┌───────▼──────┐
+                    │  Redis       │
+                    │  (broker)    │
+                    └──────────────┘
+```
 
----
+## Features
 
+- **Mobile OTP Authentication** - Send OTP via SMS, verify to receive JWT tokens
+- **JWT Token Management** - Access/refresh tokens with blacklisting support
+- **Course Catalog** - Hierarchical categories, instructor profiles, chapters, videos, attachments
+- **E-Commerce** - Cart → Checkout → Order → Payment → Enrollment flow
+- **Discount Codes** - Percent/fixed discounts with user/course scoping and usage limits
+- **Support Ticketing** - Threaded messages with email notifications
+- **User Dashboard** - Aggregated view of orders, tickets, and announcements
+- **Admin Panel** - Role-based access (Admin, Support, ProductManager, Instructor)
+- **Dynamic Pricing** - Celery Beat task increases online course prices near deadline
+- **Soft Delete** - User accounts soft-deleted to preserve data integrity
 
-# ✨ Key Features
+## API Overview
 
-## 🛒 Course Store
+| Module | Base Path | Endpoints | Description |
+|--------|-----------|-----------|-------------|
+| Users | `/api/users/` | 8 | Auth, OTP, JWT, password reset |
+| Courses | `/api/courses/` | 9 | Categories, instructors, courses, videos |
+| Purchase | `/api/purchase/` | 6 | Cart, checkout, orders, discounts |
+| Tickets | `/api/tickets/` | 3 | Support ticket CRUD + replies |
+| Admin Panel | `/api/admin-panel/` | 13 | User/order/ticket/discount management |
+| User Panel | `/api/user_panel/` | 1 | Dashboard aggregation |
 
-* Online courses with registration deadlines
-* Offline/video courses with limited access period
-* Rich course metadata:
+**Total: 40 API endpoints**
 
-  * Title, description, start date, duration
-  * Instructors
-  * Price & tiered pricing (for group purchases)
-  * Images, videos, and attachments
-* Support for chapters and multiple videos per chapter (for offline courses)
-* Search, filter, and sort capabilities
+## Authentication System
 
+### OTP Flow
+1. `POST /api/users/send-otp/` → Send 6-digit code to mobile (stored in Redis, 5-min TTL)
+2. `POST /api/users/verify-otp/` → Verify code → receive JWT access/refresh tokens
 
-## 👥 Users & Authentication
+### Password Flow
+1. `POST /api/users/token/` → Login with mobile + password → receive JWT tokens
+2. `POST /api/users/token/refresh/` → Refresh expired access token
 
-* Register and login via **OTP (SMS-based)**
+### Logout
+- `POST /api/users/token/blacklist/` → Blacklist refresh token
 
-* Token-based authentication using **Simple JWT** (access & refresh tokens)
+### Password Reset
+1. `POST /api/users/password/forgot/` → Send reset OTP
+2. `POST /api/users/password/reset/` → Verify OTP + set new password
 
-* User profile completion before checkout (name, contact info, etc.)
+## Installation
 
-* Shopping cart logic:
-
-  * A user can only buy **one instance** of each course
-  * A user **cannot re-purchase** a course they already own
-  * Cart can contain multiple different courses
-
-* Single and **group purchase** flows:
-
-  * One user can buy a course for themselves and for multiple team members
-  * Requires providing team members’ information
-
-* User dashboard:
-
-  * List of purchased courses
-  * Order history
-  * Payment history
-  * Notifications & offers
-  * Tickets and support messages
-
-
-## 🎫 Ticketing System
-
-* Create tickets:
-
-  * General (not tied to a course)
-  * Course-specific (linked to a purchased course)
-* Ticket fields:
-
-  * Message
-  * Created date
-  * Sender
-  * Status
-  * Department (financial, support, educational, etc.)
-* Tickets can be public or tied to a specific course
-* Users are notified (email/SMS) when a new reply is added to their ticket
-
-## 🛠 Admin & Support Panel
-
-* Role-based access using Django’s groups and permissions
-
-  * Support team: access to tickets only
-  * Product/content team: access to courses & categories
-  * Admins: full access
-
-* Course management:
-
-  * Add courses with complete details
-  * Edit/delete courses
-  * Configure fixed prices and tiered group-pricing
-
-* Discount code management:
-
-  * Public codes or user-specific / course-specific codes
-  * One-time or multi-use codes
-  * Fixed amount or percentage-based
-  * Valid only within a specific date range
-
-* User & enrollment management:
-
-  * Manually add/remove students from courses
-
-* Ticket management:
-
-  * View all tickets
-  * Respond to user tickets
-
----
-
-
-# 🧩 Tech Stack
-
-| Component      | Technology                     |
-| -------------- | ------------------------------ |
-| Backend        | Django + Django REST Framework |
-| Authentication | OTP + Simple JWT               |
-| Database       | PostgreSQL                     |
-| Async/Tasks    | Celery + Redis (optional)      |
-| Docs/Testing   | Postman Collection             |
-
----
-
-
-# 📁 Project Structure (Simplified)
+### Docker (Recommended)
 
 ```bash
-kelaasor_advance/
-├── users/
-├── courses/
-├── purchase/
-├── tickets/
-├── user_panel/
-├── admin_panel/
-├── kelaasor_advance/
-│   ├── settings.py
-│   └── urls.py
-└── manage.py
+# 1. Clone the repository
+git clone <repository-url>
+cd kelaasor_advance
+
+# 2. Create environment file
+cp .env.example .env
+# Edit .env with your secrets
+
+# 3. Build and start services
+docker-compose up -d --build
+
+# 4. Run migrations
+docker-compose exec web python manage.py migrate
+
+# 5. Create superuser
+docker-compose exec web python manage.py createsuperuser
+
+# 6. Collect static files
+docker-compose exec web python manage.py collectstatic --noinput
 ```
 
----
-
-
-# 🔐 Authentication Flow
-
-### 1️⃣ OTP Login
-
-* `POST /api/users/send-otp/`
-* `POST /api/users/verify-otp/` → returns `access` and `refresh` tokens
-
-### 2️⃣ Simple JWT
-
-* `POST /api/users/token/`
-* `POST /api/users/token/refresh/`
-
-All authenticated requests use:
-
-```http
-Authorization: Bearer <access_token>
-```
-
----
-
-
-# 📮 Postman Collection
-
-The repository includes a **full Postman collection** that covers:
-
-* Users (Auth + OTP + JWT)
-* Course catalog (public endpoints)
-* Cart & orders & checkout
-* Discounts
-* Tickets
-* User panel
-* Admin panel
-
-Files (included in the repo):
-
-* `kelaasor_postman_collection_latest.json`
-* `kelaasor_postman_environment_latest.json`
-
-The environment includes variables for:
-
-* `base_url`
-* `mobile`
-* `otp_code`
-* `access_token`
-* `refresh_token`
-
-Collection-level scripts automatically store JWT tokens after OTP verification or login.
-
----
-
-
-# ⚙️ Environment Setup
-
-Create a `.env` file in the project root:
-
-```dotenv
-SECRET_KEY=your-secret-key
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
-
-DB_NAME=kelaasor_db
-DB_USER=kelaasor_user
-DB_PASSWORD=password123
-DB_HOST=localhost
-DB_PORT=5432
-
-TIME_ZONE=Asia/Tehran
-
-CELERY_BROKER_URL=redis://localhost:6379/0
-CELERY_RESULT_BACKEND=redis://localhost:6379/0
-
-EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
-DEFAULT_FROM_EMAIL=no-reply@kelaasor.com
-```
-
-> For production, set `DEBUG=False`, configure a real SMTP backend, strict `ALLOWED_HOSTS`, and secure secrets via environment variables or a secret manager.
-
----
-
-
-# ▶️ Running the Project
-
-## 1. Install dependencies
+### Local Development
 
 ```bash
+# 1. Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+
+# 2. Install dependencies
 pip install -r requirements.txt
-```
 
-## 2. Apply migrations
+# 3. Create environment file
+cp .env.example .env
+# Edit .env with your local configuration
 
-```bash
+# 4. Start PostgreSQL and Redis
+# (Use Docker or local installation)
+
+# 5. Run migrations
 python manage.py migrate
-```
 
-## 3. Create a superuser
-
-```bash
+# 6. Create superuser
 python manage.py createsuperuser
-```
 
-## 4. Run the development server
-
-```bash
+# 7. Start development server
 python manage.py runserver
+
+# 8. Start Celery worker (in separate terminal)
+celery -A kelaasor_advance worker --loglevel=info
+
+# 9. Start Celery beat (in separate terminal)
+celery -A kelaasor_advance beat --loglevel=info
 ```
 
-The API will be available at:
+## Environment Variables
 
-```text
-http://localhost:8000/
-```
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `SECRET_KEY` | Yes | - | Django secret key |
+| `DEBUG` | No | `False` | Enable debug mode |
+| `ALLOWED_HOSTS` | Yes | - | Comma-separated allowed hosts |
+| `DB_NAME` | Yes | - | PostgreSQL database name |
+| `DB_USER` | Yes | - | PostgreSQL user |
+| `DB_PASSWORD` | Yes | - | PostgreSQL password |
+| `DB_HOST` | No | `localhost` | PostgreSQL host |
+| `DB_PORT` | No | `5432` | PostgreSQL port |
+| `CELERY_BROKER_URL` | Yes | - | Redis URL for Celery broker |
+| `CELERY_RESULT_BACKEND` | Yes | - | Redis URL for Celery results |
+| `CORS_ALLOWED_ORIGINS` | Yes | - | Comma-separated allowed origins |
+| `EMAIL_HOST_USER` | No | - | SMTP email username |
+| `EMAIL_HOST_PASSWORD` | No | - | SMTP email password |
+| `ACCESS_TOKEN_LIFETIME_MINUTES` | No | `30` | JWT access token lifetime |
+| `REFRESH_TOKEN_LIFETIME_DAYS` | No | `7` | JWT refresh token lifetime |
 
----
-
-# 🧪 Testing
-
-This project uses **pytest** and **pytest-django**.
-
-Run all tests:
+## Testing
 
 ```bash
-pytest -q
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=.
+
+# Run specific app tests
+pytest tests/users/
+pytest tests/courses/
+pytest tests/purchase/
 ```
 
----
+## Project Structure
 
-# 📡 API Summary (High Level)
-
-### Users
-
-```http
-POST /api/users/send-otp/
-POST /api/users/verify-otp/
-POST /api/users/token/
-POST /api/users/token/refresh/
+```
+kelaasor_advance/
+├── kelaasor_advance/     # Project configuration
+│   ├── settings.py       # Django settings
+│   ├── urls.py           # Root URL configuration
+│   ├── celery.py         # Celery configuration
+│   └── wsgi.py           # WSGI entry point
+├── users/                # Authentication & user management
+│   ├── models.py         # User, UserProfile, TeamEnrollment, Announcement
+│   ├── views.py          # Auth views (OTP, JWT, register)
+│   ├── serializers.py    # Auth serializers
+│   ├── services/         # OTP service (Redis-backed)
+│   ├── permissions.py    # Custom permissions
+│   └── throttles.py      # Rate limiting
+├── courses/              # Course catalog
+│   ├── models.py         # Category, Instructor, Course, Chapter, Video, Attachment
+│   ├── views.py          # Read-only course views
+│   ├── tasks.py          # Celery task (dynamic pricing)
+│   └── permissions.py    # Enrollment-based video access
+├── purchase/             # E-commerce
+│   ├── models.py         # Order, OrderItem, Participant, Enrollment, Payment, DiscountCode
+│   ├── views.py          # Cart, checkout, orders, discounts
+│   └── services/         # Checkout service (atomic operations)
+├── ticket/               # Support ticketing
+│   ├── models.py         # Ticket, TicketMessage
+│   ├── views.py          # Ticket CRUD + replies
+│   └── utils.py          # Email/SMS notification helpers
+├── admin_panel/          # Admin management
+│   ├── views/            # User, order, ticket, discount, notification management
+│   ├── serializers/      # Admin-specific serializers
+│   └── permissions.py    # Role-based access (6 classes)
+├── user_panel/           # User dashboard
+│   └── views.py          # Aggregated dashboard endpoint
+├── tests/                # Test suite
+│   ├── conftest.py       # Shared fixtures
+│   └── */                # App-specific tests
+├── Dockerfile            # Multi-stage Docker build
+├── docker-compose.yml    # Full stack orchestration
+├── requirements.txt      # Python dependencies
+└── manage.py             # Django management script
 ```
 
-### Courses
+## Deployment
 
-```http
-GET /api/courses/
-GET /api/courses/<slug>/
-GET /api/courses/categories/
-GET /api/courses/instructors/
+### Docker Compose Services
+
+| Service | Description | Port |
+|---------|-------------|------|
+| `web` | Django API (gunicorn) | 8000 |
+| `db` | PostgreSQL 16 | 5432 |
+| `redis` | Redis 7 | 6379 |
+| `celery_worker` | Celery task worker | - |
+| `celery_beat` | Celery task scheduler | - |
+
+### Production Commands
+
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f web
+
+# Run migrations
+docker-compose exec web python manage.py migrate
+
+# Create superuser
+docker-compose exec web python manage.py createsuperuser
+
+# Collect static files
+docker-compose exec web python manage.py collectstatic --noinput
+
+# Scale workers
+docker-compose up -d --scale celery_worker=4
 ```
 
-### Purchase
+## Developer Notes
 
-```http
-GET  /api/purchase/cart/
-POST /api/purchase/cart/add/
-POST /api/purchase/apply-discount/
-POST /api/purchase/checkout/
-GET  /api/purchase/orders/
-```
+- **OTP Storage**: OTP codes are stored in Redis with 5-minute TTL. The OTP service uses `hmac.compare_digest` for constant-time comparison.
+- **Checkout Flow**: Uses `select_for_update()` and `@transaction.atomic` for safe concurrent checkout operations.
+- **Soft Delete**: User deletion sets `deleted=True` and `is_active=False` instead of hard delete.
+- **JWT Blacklisting**: Token rotation is enabled. Refresh tokens are blacklisted after use.
+- **CORS**: Configured via `CORS_ALLOWED_ORIGINS` environment variable.
+- **Security Headers**: HSTS, secure cookies, XSS filter, and content type nosniff are enabled in production.
+- **Logging**: Structured logging to console and files (`logs/django.log`, `logs/errors.log`).
 
-### Tickets
+## License
 
-```http
-GET  /api/tickets/tickets/
-POST /api/tickets/tickets/
-POST /api/tickets/tickets/reply/
-```
-
-### Admin Panel
-
-```http
-GET /api/admin-panel/users/
-GET /api/admin-panel/orders/
-GET /api/admin-panel/stats/
-```
-
-> For full details and all parameters, use the Postman collection.
-
----
-
-
-# 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome.
-Feel free to:
-
-* Open an issue
-* Submit a pull request
-
-Please follow standard Django/DRF best practices and keep code well-documented.
-
----
-
-
-# 📜 License
-
-This project is licensed under the **MIT License**.
-
----
-
-
-# 🧡 Credits
-
-**Advance Kelaasor** is a product of the **Kelaasor** team.
-
-Backend Development: **Taha Nasrollahi**
-
+Proprietary - Kelaasor

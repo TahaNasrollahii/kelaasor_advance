@@ -2,13 +2,13 @@ from rest_framework import permissions
 
 
 class IsAdmin(permissions.BasePermission):
-    """دسترسی فقط برای ادمین‌ها"""
+    """Access restricted to admin users only."""
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_authenticated and request.user.is_superuser)
 
 
 class IsSupport(permissions.BasePermission):
-    """دسترسی برای اعضای تیم پشتیبانی"""
+    """Access for support team members."""
     def has_permission(self, request, view):
         return bool(
             request.user
@@ -21,7 +21,7 @@ class IsSupport(permissions.BasePermission):
 
 
 class IsProductManager(permissions.BasePermission):
-    """دسترسی برای مدیران دوره‌ها و تخفیف‌ها"""
+    """Access for course and discount managers."""
     def has_permission(self, request, view):
         return bool(
             request.user
@@ -34,7 +34,7 @@ class IsProductManager(permissions.BasePermission):
 
 
 class IsInstructor(permissions.BasePermission):
-    """دسترسی برای مدرس‌ها به داده‌های خودشون"""
+    """Access for instructors to their own data."""
     def has_permission(self, request, view):
         return bool(
             request.user
@@ -47,7 +47,7 @@ class IsInstructor(permissions.BasePermission):
 
 
 class IsAdminOrSupport(permissions.BasePermission):
-    """دسترسی ترکیبی برای ادمین و پشتیبانی"""
+    """Combined access for admin and support roles."""
     def has_permission(self, request, view):
         return bool(
             request.user
@@ -60,7 +60,7 @@ class IsAdminOrSupport(permissions.BasePermission):
 
 
 class IsAdminOrProductManager(permissions.BasePermission):
-    """دسترسی ترکیبی برای ادمین و مدیر محصول"""
+    """Combined access for admin and product manager roles."""
     def has_permission(self, request, view):
         return bool(
             request.user
