@@ -1,4 +1,5 @@
 import logging
+from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -10,6 +11,14 @@ from .throttles import OTPRateThrottle, OTPVerifyThrottle
 from .utils import issue_tokens_for_user
 from .serializers import (SendOTPSerializer, VerifyOTPSerializer, ForgotPasswordSendOTPSerializer,
                           ResetPasswordVerifySerializer, RegisterSerializer)
+from core.translation import (
+    MSG_REGISTER_SUCCESS,
+    MSG_OTP_SENT,
+    MSG_OTP_RESENT,
+    MSG_OTP_PASSWORD_RESET,
+    MSG_LOGIN_DEACTIVATED,
+    MSG_OTP_INVALID,
+)
 
 
 logger = logging.getLogger('users')
@@ -27,7 +36,7 @@ class RegisterView(APIView):
 
         refresh = RefreshToken.for_user(user)
         return Response({
-            "detail": "User registered successfully.",
+            "detail": MSG_REGISTER_SUCCESS,
             "access": str(refresh.access_token),
             "refresh": str(refresh),
             "user": {
@@ -50,7 +59,7 @@ class SendOTPView(APIView):
         code = send_otp(mobile, purpose="login")
         logger.info("OTP sent for login: %s", mobile)
 
-        return Response({"detail": "OTP sent successfully."}, status=200)
+        return Response({"detail": MSG_OTP_SENT}, status=200)
 
 
 class VerifyOTPAPIView(APIView):
@@ -73,7 +82,7 @@ class VerifyOTPAPIView(APIView):
         user, created = User.objects.get_or_create(mobile=mobile)
         if user.deleted or not user.is_active:
             logger.warning("Login attempt on deactivated account: %s", mobile)
-            return Response({"detail": "This account has been deactivated."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": MSG_LOGIN_DEACTIVATED}, status=status.HTTP_403_FORBIDDEN)
         tokens = issue_tokens_for_user(user)
         logger.info("User logged in via OTP: %s (created=%s)", mobile, created)
 
@@ -102,7 +111,7 @@ class ForgotPasswordSendOTPView(APIView):
         logger.info("Password reset OTP sent for: %s", mobile)
 
         return Response(
-            {"detail": "Reset password OTP sent successfully."},
+            {"detail": MSG_OTP_RESENT},
             status=status.HTTP_200_OK
         )
 
@@ -116,4 +125,4 @@ class ResetPasswordVerifyView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         logger.info("Password reset completed for: %s", request.data.get('mobile', 'unknown'))
-        return Response({"detail": "Password has been reset successfully."}, status=status.HTTP_200_OK)
+        return Response({"detail": MSG_OTP_PASSWORD_RESET}, status=status.HTTP_200_OK)

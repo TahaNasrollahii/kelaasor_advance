@@ -1,0 +1,217 @@
+# English translations for Kelaasor Advance API.
+# Copyright (C) 2026 Kelaasor
+# This file is distributed under the same license as the Kelaasor Advance API project.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: kelaasor_advance 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-24 20:00+0000\n"
+"PO-Revision-Date: 2026-06-24 20:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# Authentication Messages
+msgid "User registered successfully."
+msgstr "User registered successfully."
+
+msgid "OTP sent successfully."
+msgstr "OTP sent successfully."
+
+msgid "OTP expired or not found."
+msgstr "OTP expired or not found."
+
+msgid "Invalid OTP code."
+msgstr "Invalid OTP code."
+
+msgid "Invalid OTP format."
+msgstr "Invalid OTP format."
+
+msgid "Password reset OTP sent successfully."
+msgstr "Password reset OTP sent successfully."
+
+msgid "Password has been reset successfully."
+msgstr "Password has been reset successfully."
+
+msgid "This account has been deactivated."
+msgstr "This account has been deactivated."
+
+msgid "Login failed."
+msgstr "Login failed."
+
+msgid "Phone number must include country code (e.g. +98...)"
+msgstr "Phone number must include country code (e.g. +98...)"
+
+msgid "Invalid phone number format."
+msgstr "Invalid phone number format."
+
+msgid "Passwords do not match."
+msgstr "Passwords do not match."
+
+msgid "Password must be at least 8 characters long."
+msgstr "Password must be at least 8 characters long."
+
+msgid "Password reset failed."
+msgstr "Password reset failed."
+
+msgid "If an account with this mobile exists, an OTP has been sent."
+msgstr "If an account with this mobile exists, an OTP has been sent."
+
+msgid "Invalid credentials."
+msgstr "Invalid credentials."
+
+# Course Messages
+msgid "Course not found."
+msgstr "Course not found."
+
+msgid "Category not found."
+msgstr "Category not found."
+
+msgid "Instructor not found."
+msgstr "Instructor not found."
+
+# Purchase / Cart Messages
+msgid "Your cart is empty."
+msgstr "Your cart is empty."
+
+msgid "No items found in your cart."
+msgstr "No items found in your cart."
+
+msgid "Course already purchased."
+msgstr "Course already purchased."
+
+msgid "Course already in cart."
+msgstr "Course already in cart."
+
+msgid "Course added to cart."
+msgstr "Course added to cart."
+
+msgid "Payment successful."
+msgstr "Payment successful."
+
+msgid "Each course must have at least one participant."
+msgstr "Each course must have at least one participant."
+
+msgid "No participants provided for course {course_id}."
+msgstr "No participants provided for course {course_id}."
+
+msgid "Course {course_id} is not in your cart."
+msgstr "Course {course_id} is not in your cart."
+
+msgid "Invalid discount code."
+msgstr "Invalid discount code."
+
+msgid "Discount code is not valid for this course."
+msgstr "Discount code is not valid for this course."
+
+msgid "Discount code is invalid or does not meet usage conditions."
+msgstr "Discount code is invalid or does not meet usage conditions."
+
+msgid "code and course_id are required."
+msgstr "code and course_id are required."
+
+# Ticket Messages
+msgid "Ticket not found."
+msgstr "Ticket not found."
+
+msgid "You do not have permission to reply to this ticket."
+msgstr "You do not have permission to reply to this ticket."
+
+msgid "Reply posted successfully."
+msgstr "Reply posted successfully."
+
+msgid "Ticket created successfully."
+msgstr "Ticket created successfully."
+
+msgid "Ticket updated successfully."
+msgstr "Ticket updated successfully."
+
+# Notification Messages
+msgid "Notification marked as read."
+msgstr "Notification marked as read."
+
+# Model Choice Labels
+msgid "Online"
+msgstr "Online"
+
+msgid "Offline"
+msgstr "Offline"
+
+msgid "Pending"
+msgstr "Pending"
+
+msgid "Paid"
+msgstr "Paid"
+
+msgid "Failed"
+msgstr "Failed"
+
+msgid "Open"
+msgstr "Open"
+
+msgid "In Progress"
+msgstr "In Progress"
+
+msgid "Closed"
+msgstr "Closed"
+
+msgid "Support"
+msgstr "Support"
+
+msgid "Finance"
+msgstr "Finance"
+
+msgid "Education"
+msgstr "Education"
+
+msgid "Percent"
+msgstr "Percent"
+
+msgid "Fixed Amount"
+msgstr "Fixed Amount"
+
+msgid "Order"
+msgstr "Order"
+
+msgid "Ticket"
+msgstr "Ticket"
+
+msgid "Discount"
+msgstr "Discount"
+
+msgid "System"
+msgstr "System"
+
+# Model Help Texts
+msgid "Access duration after purchase (days)"
+msgstr "Access duration after purchase (days)"
+
+msgid "Video duration in minutes"
+msgstr "Video duration in minutes"
+
+msgid "Maximum number of times this code can be used"
+msgstr "Maximum number of times this code can be used"
+
+msgid "Restricted to a specific user"
+msgstr "Restricted to a specific user"
+
+msgid "Restricted to a specific course"
+msgstr "Restricted to a specific course"
+
+# Email Templates
+#, python-brace-format
+msgid "New reply for your ticket: {title}"
+msgstr "New reply for your ticket: {title}"
+
+#, python-brace-format
+msgid "Hello {name},\n\nYour ticket has been replied to:\n\n{message}\n\nPlease log in to view the full conversation."
+msgstr "Hello {name},\n\nYour ticket has been replied to:\n\n{message}\n\nPlease log in to view the full conversation."
+
+#, python-brace-format
+msgid "Your ticket has been replied to: {title}\n{message}"
+msgstr "Your ticket has been replied to: {title}\n{message}"

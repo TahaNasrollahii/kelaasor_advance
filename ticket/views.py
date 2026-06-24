@@ -1,10 +1,15 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
 from .models import Ticket, TicketMessage
 from .permissions import IsTicketOwnerOrSupport
 from .serializers import TicketSerializer, TicketMessageSerializer
 from .utils import send_ticket_reply_email, send_ticket_reply_sms
+from core.translation import (
+    MSG_TICKET_NOT_FOUND,
+    MSG_TICKET_REPLY_UNAUTHORIZED,
+)
 
 
 class TicketListCreateAPIView(generics.ListCreateAPIView):
@@ -40,10 +45,10 @@ class TicketMessageCreateAPIView(generics.CreateAPIView):
         try:
             ticket = Ticket.objects.get(id=ticket_id)
         except Ticket.DoesNotExist:
-            return Response({'detail': 'Ticket not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': MSG_TICKET_NOT_FOUND}, status=status.HTTP_404_NOT_FOUND)
 
         if ticket.user != request.user and not request.user.is_staff:
-            return Response({'detail': 'You do not have permission to reply to this ticket'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'detail': MSG_TICKET_REPLY_UNAUTHORIZED}, status=status.HTTP_403_FORBIDDEN)
 
         reply = TicketMessage.objects.create(
             ticket=ticket,

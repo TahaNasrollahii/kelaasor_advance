@@ -1,7 +1,18 @@
 from django.db import models
 from django.conf import settings
 from django.db.models import F
+from django.utils.translation import gettext_lazy as _
 from courses.models import Course
+from core.translation import (
+    ORDER_STATUS_PENDING,
+    ORDER_STATUS_PAID,
+    ORDER_STATUS_FAILED,
+    DISCOUNT_TYPE_PERCENT,
+    DISCOUNT_TYPE_FIXED,
+    HELP_DISCOUNT_MAX_USAGE,
+    HELP_DISCOUNT_USER,
+    HELP_DISCOUNT_COURSE,
+)
 
 
 User = settings.AUTH_USER_MODEL
@@ -9,9 +20,9 @@ User = settings.AUTH_USER_MODEL
 
 class Order(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('paid', 'Paid'),
-        ('failed', 'Failed'),
+        ('pending', ORDER_STATUS_PENDING),
+        ('paid', ORDER_STATUS_PAID),
+        ('failed', ORDER_STATUS_FAILED),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
@@ -55,8 +66,8 @@ class Payment(models.Model):
 
 class DiscountCode(models.Model):
     CODE_TYPE_CHOICES = [
-        ('percent', 'Percent'),
-        ('fixed', 'Fixed Amount'),
+        ('percent', DISCOUNT_TYPE_PERCENT),
+        ('fixed', DISCOUNT_TYPE_FIXED),
     ]
 
     code = models.CharField(max_length=50, unique=True)
@@ -65,10 +76,10 @@ class DiscountCode(models.Model):
     value = models.DecimalField(max_digits=10, decimal_places=2)
     active_from = models.DateTimeField()
     active_until = models.DateTimeField()
-    max_usage = models.PositiveIntegerField(null=True, blank=True, help_text='Maximum number of times this code can be used')
+    max_usage = models.PositiveIntegerField(null=True, blank=True, help_text=HELP_DISCOUNT_MAX_USAGE)
     used_count = models.PositiveIntegerField(default=0)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, help_text='Restricted to a specific user')
-    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True, help_text='Restricted to a specific course')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, help_text=HELP_DISCOUNT_USER)
+    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True, help_text=HELP_DISCOUNT_COURSE)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):

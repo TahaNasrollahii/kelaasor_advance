@@ -1,8 +1,16 @@
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from .models import User
 from django.contrib.auth.password_validation import validate_password
 from .services.otp_service import send_otp, verify_otp
+from core.translation import (
+    MSG_PASSWORD_MISMATCH,
+    MSG_PHONE_REQUIRED_COUNTRY_CODE,
+    MSG_OTP_FORMAT_INVALID,
+    MSG_IF_ACCOUNT_EXISTS_OTP_SENT,
+    MSG_INVALID_CREDENTIALS,
+)
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -15,7 +23,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['password'] != data['password2']:
-            raise serializers.ValidationError({"password": "Passwords do not match."})
+            raise serializers.ValidationError({"password": MSG_PASSWORD_MISMATCH})
         return data
 
     def create(self, validated_data):
@@ -43,12 +51,12 @@ class VerifyOTPSerializer(serializers.Serializer):
     def validate_mobile(self, value):
         value = value.strip()
         if not value.startswith("+"):
-            raise serializers.ValidationError("Phone number must include country code (e.g. +98...)")
+            raise serializers.ValidationError(MSG_PHONE_REQUIRED_COUNTRY_CODE)
         return value
 
     def validate_code(self, value):
         if not value.isdigit() or len(value) != 6:
-            raise serializers.ValidationError("Invalid OTP format.")
+            raise serializers.ValidationError(MSG_OTP_FORMAT_INVALID)
         return value
 
 
@@ -58,9 +66,9 @@ class ForgotPasswordSendOTPSerializer(serializers.Serializer):
     def validate_mobile(self, value):
         value = value.strip()
         if not value.startswith('+'):
-            raise serializers.ValidationError("Phone number must include country code (e.g. +98...)")
+            raise serializers.ValidationError(MSG_PHONE_REQUIRED_COUNTRY_CODE)
         if not User.objects.filter(mobile=value, is_active=True, deleted=False).exists():
-            raise serializers.ValidationError("If an account with this mobile exists, an OTP has been sent.")
+            raise serializers.ValidationError(MSG_IF_ACCOUNT_EXISTS_OTP_SENT)
         return value
 
     def create(self, validated_data):
@@ -84,7 +92,7 @@ class ResetPasswordVerifySerializer(serializers.Serializer):
 
         # Validate mobile
         if not mobile.startswith("+"):
-            raise serializers.ValidationError("Phone number must include country code.")
+            raise serializers.ValidationError(MSG_PHONE_REQUIRED_COUNTRY_CODE)
 
         # Validate OTP via Redis
         try:
@@ -94,7 +102,7 @@ class ResetPasswordVerifySerializer(serializers.Serializer):
 
         # Check user existence
         if not User.objects.filter(mobile=mobile, is_active=True, deleted=False).exists():
-            raise serializers.ValidationError("Invalid credentials.")
+            raise serializers.ValidationError(MSG_INVALID_CREDENTIALS)
 
         return data
 

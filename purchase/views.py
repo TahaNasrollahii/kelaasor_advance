@@ -1,5 +1,6 @@
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -18,6 +19,14 @@ from .services.checkout_service import (
     finalize_order,
     create_payment,
     create_enrollments,
+)
+from core.translation import (
+    MSG_COURSE_ALREADY_PURCHASED,
+    MSG_COURSE_ALREADY_IN_CART,
+    MSG_COURSE_ADDED_TO_CART,
+    MSG_PAYMENT_SUCCESSFUL,
+    MSG_DISCOUNT_CODE_AND_COURSE_REQUIRED,
+    MSG_DISCOUNT_USAGE_CONDITIONS,
 )
 
 
@@ -45,17 +54,17 @@ class CartAddItemAPIView(generics.CreateAPIView):
         course = get_object_or_404(Course, id=course_id)
 
         if OrderItem.objects.filter(order__user=request.user, course=course, order__status='paid').exists():
-            return Response({'detail': 'Course already purchased'}, status=400)
+            return Response({'detail': MSG_COURSE_ALREADY_PURCHASED}, status=400)
 
         pending_order, _ = Order.objects.get_or_create(
             user=request.user, status='pending', defaults={'total_amount': 0}
         )
 
         if OrderItem.objects.filter(order=pending_order, course=course).exists():
-            return Response({'detail': 'Course already in cart'}, status=400)
+            return Response({'detail': MSG_COURSE_ALREADY_IN_CART}, status=400)
 
         OrderItem.objects.create(order=pending_order, course=course, price=course.price, quantity=1)
-        return Response({'detail': 'Course added to cart', 'order_id': pending_order.id}, status=201)
+        return Response({'detail': MSG_COURSE_ADDED_TO_CART, 'order_id': pending_order.id}, status=201)
 
 
 class CheckoutAPIView(APIView):
@@ -80,7 +89,7 @@ class CheckoutAPIView(APIView):
         create_enrollments(order)
 
         return Response({
-            "detail": "Payment successful",
+            "detail": MSG_PAYMENT_SUCCESSFUL,
             "order_id": order.id,
             "subtotal": subtotal,
             "discount_amount": discount_amount,
@@ -113,13 +122,13 @@ class ApplyDiscountCodeAPIView(APIView):
         code_str = request.data.get('code')
         course_id = request.data.get('course_id')
         if not code_str or not course_id:
-            return Response({'detail': 'code and course_id are required'}, status=400)
+            return Response({'detail': MSG_DISCOUNT_CODE_AND_COURSE_REQUIRED}, status=400)
 
         discount = get_object_or_404(DiscountCode, code=code_str)
         course = get_object_or_404(Course, id=course_id)
 
         if not discount.can_use(request.user, course):
-            return Response({'detail': 'Discount code is invalid or does not meet usage conditions'}, status=400)
+            return Response({'detail': MSG_DISCOUNT_USAGE_CONDITIONS}, status=400)
 
         return Response({
             'code': discount.code,

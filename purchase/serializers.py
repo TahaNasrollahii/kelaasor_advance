@@ -1,5 +1,10 @@
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from .models import Order, OrderItem, Participant, Payment, DiscountCode
+from core.translation import (
+    MSG_PARTICIPANT_REQUIRED,
+    MSG_CART_EMPTY,
+)
 
 
 class ParticipantSerializer(serializers.ModelSerializer):
@@ -58,7 +63,7 @@ class CheckoutItemSerializer(serializers.Serializer):
 
     def validate_participants(self, value):
         if not value:
-            raise serializers.ValidationError("Each course must have at least one participant")
+            raise serializers.ValidationError(MSG_PARTICIPANT_REQUIRED)
         return value
 
 class CheckoutSerializer(serializers.Serializer):
@@ -67,5 +72,5 @@ class CheckoutSerializer(serializers.Serializer):
 
     def validate_items(self, value):
         if not value:
-            raise serializers.ValidationError("Cart is empty")
+            raise serializers.ValidationError(MSG_CART_EMPTY)
         return value

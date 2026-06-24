@@ -1,6 +1,7 @@
 import logging
 from decimal import Decimal
 from django.db import transaction
+from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
 from ..models import (
     Order,
@@ -9,6 +10,15 @@ from ..models import (
     DiscountCode,
     Payment,
     Enrollment,
+)
+from core.translation import (
+    MSG_CART_EMPTY,
+    MSG_CART_NO_ITEMS,
+    MSG_NO_PARTICIPANTS_PROVIDED,
+    MSG_COURSE_NOT_IN_CART,
+    MSG_DISCOUNT_INVALID,
+    MSG_DISCOUNT_NOT_VALID_FOR_COURSE,
+    MSG_DISCOUNT_USAGE_CONDITIONS,
 )
 
 logger = logging.getLogger('purchase')
@@ -24,11 +34,11 @@ def get_pending_order(user: "User") -> Order:
     )
     if not order:
         logger.warning("Checkout attempted with empty cart for user %s", user.pk)
-        raise ValidationError({"detail": "Your cart is empty"})
+        raise ValidationError({"detail": MSG_CART_EMPTY})
 
     if not order.items.exists():
         logger.warning("Checkout attempted with empty order items for user %s, order %s", user.pk, order.pk)
-        raise ValidationError({"detail": "No items found in your cart"})
+        raise ValidationError({"detail": MSG_CART_NO_ITEMS})
 
     return order
 
@@ -60,7 +70,7 @@ def attach_participants_to_order(order: Order, items_payload: list[dict]) -> Non
     for order_item in order_items:
         if order_item.course_id not in participants_by_course:
             raise ValidationError({
-                "detail": f"No participants provided for course {order_item.course_id}"
+                "detail": MSG_NO_PARTICIPANTS_PROVIDED.format(course_id=order_item.course_id)
             })
 
     # Course in payload but not in cart
@@ -68,7 +78,7 @@ def attach_participants_to_order(order: Order, items_payload: list[dict]) -> Non
     for course_id in participants_by_course.keys():
         if course_id not in course_ids_in_cart:
             raise ValidationError({
-                "detail": f"Course {course_id} is not in your cart"
+                "detail": MSG_COURSE_NOT_IN_CART.format(course_id=course_id)
             })
 
     # Create/update participants and quantity
@@ -112,7 +122,7 @@ def apply_discount(
         .first()
     )
     if not discount_obj:
-        raise ValidationError({"detail": "Invalid discount code"})
+        raise ValidationError({"detail": MSG_DISCOUNT_INVALID})
 
     items = list(order.items.select_related("course"))
 
@@ -123,12 +133,12 @@ def apply_discount(
                 target_course = item.course
                 break
         if not target_course:
-            raise ValidationError({"detail": "Discount code is not valid for this course"})
+            raise ValidationError({"detail": MSG_DISCOUNT_NOT_VALID_FOR_COURSE})
     else:
         target_course = None
 
     if not discount_obj.can_use(order.user, target_course):
-        raise ValidationError({"detail": "Discount code is invalid or does not meet usage conditions"})
+        raise ValidationError({"detail": MSG_DISCOUNT_USAGE_CONDITIONS})
 
     if discount_obj.discount_type == "percent":
         discount_amount = subtotal * discount_obj.value / Decimal("100")

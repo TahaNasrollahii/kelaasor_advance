@@ -1,6 +1,13 @@
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from users.models import User
+from core.translation import (
+    COURSE_TYPE_ONLINE,
+    COURSE_TYPE_OFFLINE,
+    HELP_COURSE_ACCESS_DURATION,
+    HELP_VIDEO_DURATION,
+)
 
 
 class Category(models.Model):
@@ -24,8 +31,8 @@ class Instructor(models.Model):
 
 class Course(models.Model):
     COURSE_TYPE_CHOICES = [
-        ("online", "Online"),
-        ("offline", "Offline"),
+        ("online", COURSE_TYPE_ONLINE),
+        ("offline", COURSE_TYPE_OFFLINE),
     ]
 
     title = models.CharField(max_length=200)
@@ -43,7 +50,7 @@ class Course(models.Model):
     start_date = models.DateTimeField(null=True, blank=True)
     registration_deadline = models.DateTimeField(null=True, blank=True)
 
-    access_duration_days = models.PositiveIntegerField(null=True, blank=True, help_text="Access duration after purchase (days)")
+    access_duration_days = models.PositiveIntegerField(null=True, blank=True, help_text=HELP_COURSE_ACCESS_DURATION)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -75,7 +82,7 @@ class Video(models.Model):
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='videos')
     title = models.CharField(max_length=200)
     video_file = models.FileField(upload_to='courses/videos/')
-    duration = models.PositiveIntegerField(help_text="Video duration in minutes")
+    duration = models.PositiveIntegerField(help_text=HELP_VIDEO_DURATION)
     order = models.PositiveIntegerField(default=0)
     is_free = models.BooleanField(default=False)
 

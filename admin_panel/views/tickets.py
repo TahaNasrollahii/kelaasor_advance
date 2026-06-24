@@ -1,5 +1,6 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
+from django.utils.translation import gettext_lazy as _
 from ticket.models import Ticket, TicketMessage
 from admin_panel.permissions import IsAdminOrSupport
 from django.utils import timezone
@@ -8,6 +9,7 @@ from admin_panel.serializers.tickets import (
     TicketDetailSerializer,
     TicketReplySerializer,
 )
+from core.translation import MSG_TICKET_REPLY_SUCCESS
 
 
 class AdminTicketListAPIView(generics.ListAPIView):
@@ -55,4 +57,4 @@ class TicketReplyAPIView(generics.GenericAPIView):
             ticket.status = new_status
         ticket.save()
 
-        return Response({"detail": "Reply posted successfully"}, status=status.HTTP_201_CREATED)
+        return Response({"detail": MSG_TICKET_REPLY_SUCCESS}, status=status.HTTP_201_CREATED)
