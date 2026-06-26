@@ -52,3 +52,9 @@ Thumbs.db
 
 # Docker
 docker-compose.override.yml
+
+# Agent and IDE local directories
+.gemini/
+.claude/
+.mimocode/
+
