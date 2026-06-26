@@ -54,7 +54,35 @@ Thumbs.db
 docker-compose.override.yml
 
 # Agent and IDE local directories
-.gemini/*
-.claude/*
-.mimocode/*
+.gemini/
+.claude/
+.mimocode/
 
+# Postman collections (optional, but contains endpoint details)
+*.postman_collection.json
+
+# pytest
+.pytest_cache/
+pytest_cache/
+
+# Coverage reports
+.coverage
+coverage.xml
+htmlcov/
+
+# mypy / type checkers
+.mypy_cache/
+.dmypy.json
+
+# Ruff / linting cache
+.ruff_cache/
+
+# uv (if you use it)
+.uv/
+uv.lock   # debatable, some teams track this
+
+# Compiled translations
+*.mo
+
+# Jupyter (if ever used)
+.ipynb_checkpoints/
