@@ -57,11 +57,13 @@ class VideoDetailAPIView(generics.RetrieveAPIView):
     def get_object(self):
         course_slug = self.kwargs.get("course_slug")
         video_id = self.kwargs.get("video_id")
-        return get_object_or_404(
+        obj = get_object_or_404(
             Video.objects.select_related("chapter__course"),
             id=video_id,
             chapter__course__slug=course_slug
         )
+        self.check_object_permissions(self.request, obj)
+        return obj
 
 
 class AttachmentDetailAPIView(generics.RetrieveAPIView):

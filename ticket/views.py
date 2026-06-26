@@ -31,7 +31,7 @@ class TicketRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
         user = self.request.user
         if user.is_staff:
             return Ticket.objects.all().order_by('-created_at')
-        return Ticket.objects.filter(user=user).order_by('-created_at')
+        return Ticket.objects.filter(Q(user=user) | Q(is_public=True)).order_by('-created_at')
 
 
 class TicketMessageCreateAPIView(generics.CreateAPIView):

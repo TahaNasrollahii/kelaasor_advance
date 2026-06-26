@@ -3,7 +3,7 @@ import random
 import hmac
 import redis
 from django.conf import settings
-from django.core.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from core.translation import (
     MSG_OTP_EXPIRED,

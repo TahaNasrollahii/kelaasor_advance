@@ -46,9 +46,6 @@ htmlcov
 # Docker
 docker-compose.override.yml
 
-# Migrations (build from scratch in production)
-**/migrations/
-
 # OS
 .DS_Store
 Thumbs.db

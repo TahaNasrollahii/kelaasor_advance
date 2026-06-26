@@ -66,14 +66,14 @@ services:
       - log_data:/app/logs
     command: >
       sh -c "python manage.py migrate --noinput &&
-             python manage.py collectstatic --noinput &&
-             gunicorn kelaasor_advance.wsgi:application
-             --bind 0.0.0.0:8000
-             --workers 4
-             --threads 2
-             --timeout 120
-             --access-logfile -
-             --error-logfile -"
+      python manage.py collectstatic --noinput &&
+      gunicorn kelaasor_advance.wsgi:application
+      --bind 0.0.0.0:8000
+      --workers 4
+      --threads 2
+      --timeout 120
+      --access-logfile -
+      --error-logfile -"
 
   # =============================================================================
   # Celery Worker
