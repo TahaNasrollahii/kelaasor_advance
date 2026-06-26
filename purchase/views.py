@@ -10,7 +10,7 @@ from courses.models import Course
 from .serializers import (
     OrderSerializer, CartItemSerializer, DiscountCodeSerializer, CheckoutSerializer
 )
-from .models import (Order, OrderItem, DiscountCode)
+from .models import (Order, OrderItem, DiscountCode, Enrollment)
 from .services.checkout_service import (
     get_pending_order,
     attach_participants_to_order,
@@ -53,7 +53,7 @@ class CartAddItemAPIView(generics.CreateAPIView):
         course_id = request.data.get('course')
         course = get_object_or_404(Course, id=course_id)
 
-        if OrderItem.objects.filter(order__user=request.user, course=course, order__status='paid').exists():
+        if Enrollment.objects.filter(user=request.user, course=course).exists():
             return Response({'detail': MSG_COURSE_ALREADY_PURCHASED}, status=400)
 
         pending_order, _ = Order.objects.get_or_create(

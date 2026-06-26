@@ -37,7 +37,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     Custom user model that uses mobile as USERNAME_FIELD.
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    mobile = models.CharField(max_length=15, unique=True, validators=[PHONE_RE], db_index=True)
+    mobile = models.CharField(max_length=50, unique=True, validators=[PHONE_RE], db_index=True)
     email = models.EmailField(blank=True, null=True)
     full_name = models.CharField(max_length=200, blank=True)
     is_active = models.BooleanField(default=True)
@@ -68,7 +68,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         self.deleted = True
         self.deleted_at = timezone.now()
         self.is_active = False
-        self.save(update_fields=['deleted', 'deleted_at', 'is_active'])
+        # Scramble mobile to free it up for re-registration
+        timestamp = self.deleted_at.strftime("%Y%m%d%H%M%S")
+        self.mobile = f"{self.mobile}_deleted_{timestamp}"
+        self.save(update_fields=['deleted', 'deleted_at', 'is_active', 'mobile'])
 
 
 class UserProfile(models.Model):

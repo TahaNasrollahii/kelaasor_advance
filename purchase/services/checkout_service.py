@@ -26,6 +26,12 @@ logger = logging.getLogger('purchase')
 
 def get_pending_order(user: "User") -> Order:
     """Return the user's pending order with a row lock for atomic operations."""
+    # Self-heal duplicate pending orders (ghost carts) caused by race conditions
+    pending_orders = list(Order.objects.filter(user=user, status="pending").order_by('-id'))
+    if len(pending_orders) > 1:
+        for ghost in pending_orders[1:]:
+            ghost.delete()
+
     order = (
         Order.objects
         .select_for_update()
@@ -191,8 +197,16 @@ def create_enrollments(order: Order) -> None:
 
     for item in items:
         for participant in item.participants.all():
+            target_user = order.user
+            if participant.mobile:
+                from users.models import User
+                target_user, _ = User.objects.get_or_create(
+                    mobile=participant.mobile,
+                    defaults={'full_name': participant.full_name, 'is_active': True}
+                )
+
             _, created = Enrollment.objects.get_or_create(
-                user=order.user,
+                user=target_user,
                 course=item.course,
                 participant=participant,
             )
