@@ -284,4 +284,4 @@ docker-compose up -d --scale celery_worker=4
 
 ## License
 
-Proprietary - Kelaasor
+Taha Nasrollahi
