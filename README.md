@@ -238,6 +238,44 @@ kelaasor_advance/
 └── manage.py             # Django management script
 ```
 
+## CI/CD Pipeline
+
+This project uses GitHub Actions for continuous integration and continuous deployment. 
+The pipeline is designed for production reliability and executes on the `main` branch.
+
+### Pipeline Stages
+
+1. **Lint, Format, and Test (CI)**
+   - Checks out the latest code.
+   - Sets up Python 3.12 and caches dependencies.
+   - Enforces strict code formatting using `black`.
+   - Runs linting using `ruff`.
+   - Executes the complete test suite using `pytest` with `pytest-cov`.
+   - Generates and uploads XML coverage reports.
+
+2. **Validate Docker Build**
+   - Uses Docker Buildx for advanced caching.
+   - Builds the production image target to ensure no Dockerfile regressions.
+
+3. **Deploy to Production VPS (CD)**
+   - Connects securely to the production Linux VPS via SSH.
+   - Pulls the latest code from the `main` branch.
+   - Rebuilds and restarts the Docker containers without significant downtime.
+
+### Required GitHub Secrets for Deployment
+
+To enable automatic deployments, you must configure the following secrets in your repository settings:
+- `VPS_SSH_HOST`: The IP address or domain name of your VPS.
+- `VPS_SSH_USER`: The SSH username (e.g., `ubuntu`, `root`).
+- `VPS_SSH_KEY`: The private SSH key for authentication.
+- `PROJECT_PATH`: The absolute path to the project directory on the server (e.g., `/var/www/kelaasor_advance`).
+
+### Troubleshooting CI/CD Failures
+
+- **Formatting/Linting Errors**: Run `black .` and `ruff check . --fix` locally before committing.
+- **Test Failures**: Review the GitHub Actions logs to identify which `pytest` cases failed. Test reports are available in the Actions artifacts.
+- **Deployment Failures**: Ensure the VPS secrets are correct and the server has sufficient disk space for Docker builds.
+
 ## Deployment
 
 ### Docker Compose Services
